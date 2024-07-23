@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:pobla_app/config/environment/environment.dart';
 import 'package:pobla_app/infrastructure/models/bloqueo.model.dart';
+import 'package:pobla_app/src/providers/user/user_provider.dart';
 import 'package:pobla_app/src/utils/week_calculator.dart';
 import 'package:socket_io_client/socket_io_client.dart' as IO;
+
+UserProvider _userProvider = UserProvider();
 
 class BloqueosProvider with ChangeNotifier {
   List<BloqueoModel> bloqueos = [];
@@ -24,14 +27,13 @@ class BloqueosProvider with ChangeNotifier {
           .setTransports(['websocket'])
           .disableAutoConnect() // Disable auto-connection
           .setExtraHeaders({
-            'authentication':
-                'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImFjNzUzMjk2LTZkYjUtNDg0Zi04NzAyLTA3NTA0MTQ5Mzg2MyIsImlhdCI6MTcyMTUxMzcyNSwiZXhwIjoxNzIxNTIwOTI1fQ.0QV65trlvWhno2UdqSHnmEMP8CNhWdU3FSgWQXsJCN4',
+            'authentication': _userProvider.userListener.value!.jwtToken,
           })
           .build(),
     );
 
     socket.onConnect((_) {
-      print('Conectado a /bloqueos');
+      // print('Conectado a /bloqueos');
       // loadingBloqueos = true;
       // notifyListeners();
       socket.emit('loadBloqueos', {
@@ -41,7 +43,7 @@ class BloqueosProvider with ChangeNotifier {
     });
 
     socket.onDisconnect((_) {
-      print('Desconectado de /bloqueos');
+      // print('Desconectado de /bloqueos');
     });
 
     socket.on('loadedBloqueos', (data) {
@@ -50,7 +52,7 @@ class BloqueosProvider with ChangeNotifier {
       bloqueos = bloqueosData.map((r) => BloqueoModel.fromApi(r)).toList();
       loadingBloqueos = false;
       notifyListeners();
-      print('Datos recibidos BLOQUEOS: $bloqueos');
+      // print('Datos recibidos BLOQUEOS: $bloqueos');
     });
 
     // Escuchar evento de nueva reserva
@@ -58,7 +60,7 @@ class BloqueosProvider with ChangeNotifier {
       BloqueoModel nuevoBloqueo = BloqueoModel.fromApi(data);
       bloqueos.add(nuevoBloqueo);
       notifyListeners();
-      print('Nuevo bloqueo recibido: $nuevoBloqueo');
+      // print('Nuevo bloqueo recibido: $nuevoBloqueo');
     });
   }
 

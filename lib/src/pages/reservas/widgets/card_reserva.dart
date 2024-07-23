@@ -49,7 +49,7 @@ class CardReserva extends StatelessWidget {
         ),
       );
     } else if (ManagementCardReserva.isOwnReservationPast(
-        selectedDate, hour, reservaProvider.reservas, userProvider.userId)) {
+        selectedDate, hour, reservaProvider.reservas, userProvider.user!.id)) {
       canchaWidget = Cancha(
         tooltipText: 'Esta fue una de tus reservas.',
         selectedDate: selectedDate,
@@ -68,7 +68,7 @@ class CardReserva extends StatelessWidget {
         ),
       );
     } else if (ManagementCardReserva.isOwnReservation(
-        selectedDate, hour, reservaProvider.reservas, userProvider.userId)) {
+        selectedDate, hour, reservaProvider.reservas, userProvider.user!.id)) {
       canchaWidget = Cancha(
         tooltipText: 'Haz reservado esta hora.',
         selectedDate: selectedDate,
@@ -130,7 +130,7 @@ class CardReserva extends StatelessWidget {
         ),
       );
     } else if (ManagementCardReserva.hasReservationOnDate(
-        selectedDate, reservaProvider.reservas, userProvider.userId)) {
+        selectedDate, reservaProvider.reservas, userProvider.user!.id)) {
       canchaWidget = Cancha(
         tooltipText: 'Solo se permite 1 reserva diaria.',
         selectedDate: selectedDate,

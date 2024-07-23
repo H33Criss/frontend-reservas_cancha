@@ -1,67 +1,87 @@
+// socket_reserva_provider.dart
 import 'package:flutter/material.dart';
 import 'package:pobla_app/config/environment/environment.dart';
 import 'package:pobla_app/infrastructure/models/reserva.model.dart';
+import 'package:pobla_app/src/providers/providers.dart';
 import 'package:pobla_app/src/utils/week_calculator.dart';
 import 'package:socket_io_client/socket_io_client.dart' as IO;
 
+//mixin, porque se separo la logica de socket y rest en 2 archivos
+//para conformar 1 provider, llamado "ReservaProvider"
 mixin SocketReservaProvider on ChangeNotifier {
   List<ReservaModel> reservas = [];
   bool loadingReservas = true;
-  late IO.Socket _socket;
-  IO.Socket get socket => _socket;
-  Function get emit => _socket.emit;
+  IO.Socket? _socket;
+  IO.Socket? get socket => _socket;
+  late UserProvider _userProvider;
 
-  void initSocket() {
+  void initSocket(UserProvider userProvider) {
+    _userProvider = userProvider;
+    _updateSocket();
+    //Para que cada vez que el usuario cambie, creo un nuevo socket, con otro token
+    _userProvider.userListener.addListener(_updateSocket);
+  }
+
+  void _updateSocket() {
+    //Token del nuevo usuario en sesión
+    final token = _userProvider.userListener.value?.jwtToken;
+
+    // Si ya había una conexión de otro usuario, desconectamos
+    if (_socket != null && _socket!.connected) {
+      _socket!.disconnect();
+    }
+
+    // Conexión con el servidor, pero para el namespace reservas
     const namespace = 'reservas';
-
     _socket = IO.io(
       '${Environment.apiSocketUrl}/$namespace',
       IO.OptionBuilder()
           .setTransports(['websocket'])
-          .disableAutoConnect() // Disable auto-connection
-          .setExtraHeaders({
-            'authentication':
-                'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImFjNzUzMjk2LTZkYjUtNDg0Zi04NzAyLTA3NTA0MTQ5Mzg2MyIsImlhdCI6MTcyMTUxMzcyNSwiZXhwIjoxNzIxNTIwOTI1fQ.0QV65trlvWhno2UdqSHnmEMP8CNhWdU3FSgWQXsJCN4',
-          })
+          .disableAutoConnect()
+          .setExtraHeaders({'authentication': token})
           .build(),
     );
 
-    socket.onConnect((_) {
-      print('Conectado a /reservas');
-      // loadingReservas = true;
-      // notifyListeners();
-      socket.emit('loadReservas', {
+    _socket!.onConnect((_) {
+      _socket!.emit('loadReservas', {
         'inicio': WeekCalculator.getWeekDates().inicio,
         'fin': WeekCalculator.getWeekDates().fin,
       });
     });
 
-    socket.onDisconnect((_) {
-      print('Desconectado de /reservas');
+    _socket!.onDisconnect((_) {
+      // print('Desconectado de Reservas');
     });
 
-    socket.on('loadedReservas', (data) {
+    _socket!.on('loadedReservas', (data) {
       List<Map<String, dynamic>> reservasData =
           List<Map<String, dynamic>>.from(data);
       reservas = reservasData.map((r) => ReservaModel.fromApi(r)).toList();
       loadingReservas = false;
       notifyListeners();
-      print('Datos recibidos RESERVAS: $reservas');
     });
 
-    socket.on('nuevaReserva', (data) {
+    _socket!.on('nuevaReserva', (data) {
       ReservaModel nuevaReserva = ReservaModel.fromApi(data);
       reservas.add(nuevaReserva);
       notifyListeners();
-      print('Nueva reserva recibida: $nuevaReserva');
     });
   }
 
+  // Conexión manual al servidor socket, pero en /reservas
   void connect() {
-    _socket.connect();
+    _socket?.connect();
   }
 
+  // Desconexión manual al servidor socket, pero en /reservas
   void disconnect() {
-    _socket.disconnect();
+    _socket?.disconnect();
+  }
+
+  // Dejamos de escuchar si cambia el "user" de UserProvider
+  @override
+  void dispose() {
+    _userProvider.userListener.removeListener(_updateSocket);
+    super.dispose();
   }
 }

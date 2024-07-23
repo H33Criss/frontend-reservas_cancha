@@ -1,18 +1,36 @@
 import 'package:flutter/material.dart';
 import 'package:pobla_app/config/environment/environment.dart';
 import 'package:dio/dio.dart';
+import 'package:pobla_app/src/providers/user/user_provider.dart';
 
+//mixin, porque se separo la logica de socket y rest en 2 archivos
+//para conformar 1 provider, llamado "ReservaProvider"
 mixin RestReservaProvider on ChangeNotifier {
-  final dio = Dio(
-    BaseOptions(
-      baseUrl: Environment.apiRestUrl,
-      headers: {
-        'Authorization':
-            'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImFjNzUzMjk2LTZkYjUtNDg0Zi04NzAyLTA3NTA0MTQ5Mzg2MyIsImlhdCI6MTcyMTUxMzcyNSwiZXhwIjoxNzIxNTIwOTI1fQ.0QV65trlvWhno2UdqSHnmEMP8CNhWdU3FSgWQXsJCN4',
-      },
-    ),
-  );
+  late Dio dio;
+  late UserProvider _userProvider;
+
   bool creatingReserva = false;
+
+  void initialize(UserProvider userProvider) {
+    _userProvider = userProvider;
+    _updateDio();
+    //Para que cada vez que el usuario cambie, se inicialize un nuevo dio, con otro token
+    //en el header.
+    _userProvider.userListener.addListener(_updateDio);
+  }
+
+  void _updateDio() {
+    //Nuevo dio con otro token de usuario.
+    dio = Dio(
+      BaseOptions(
+        baseUrl: Environment.apiRestUrl,
+        headers: {
+          'Authorization':
+              'Bearer ${_userProvider.userListener.value?.jwtToken}',
+        },
+      ),
+    );
+  }
 
   Future<void> editReservas() async {}
   Future<void> cancelReserva(String idReserva) async {}
@@ -20,7 +38,6 @@ mixin RestReservaProvider on ChangeNotifier {
   Future<void> addReserva(Map<String, dynamic> reservaData) async {
     creatingReserva = true;
     notifyListeners();
-    print(reservaData);
     await dio.post('/reservas', data: reservaData).then((response) {
       creatingReserva = false;
       notifyListeners();
@@ -37,5 +54,11 @@ mixin RestReservaProvider on ChangeNotifier {
       creatingReserva = false;
       notifyListeners();
     });
+  }
+
+  @override
+  void dispose() {
+    _userProvider.userListener.removeListener(_updateDio);
+    super.dispose();
   }
 }

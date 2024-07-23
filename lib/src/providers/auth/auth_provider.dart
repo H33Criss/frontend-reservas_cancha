@@ -1,42 +1,64 @@
-import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:pobla_app/infrastructure/repositories/auth_repository.dart';
+import 'package:pobla_app/src/providers/user/user_provider.dart';
 
-enum AuthStatus {
-  authenticated,
-  authenticating,
-  notAuthenticated,
-}
+UserProvider _userProvider = UserProvider();
 
 class AuthProvider extends ChangeNotifier {
   final AuthRepository _authRepository = AuthRepository();
-  //Errores ocurridos durante el login
-  List<String> errors = [];
-  ValueNotifier<AuthStatus> status =
-      ValueNotifier<AuthStatus>(AuthStatus.notAuthenticated);
+
+  bool authenticating = false;
+  bool inProgressGoogle = false;
+  bool inProgressEmailAndPassword = false;
+
+  Future<void> loginWithEmailAndPassword(String email, String password) async {
+    authenticating = true;
+    inProgressEmailAndPassword = true;
+    notifyListeners();
+
+    try {
+      //!DELETE in production
+      await Future.delayed(const Duration(seconds: 1));
+      final response =
+          await _authRepository.loginWithEmailAndPassword(email, password);
+      if (response == null) {
+        throw Exception('Invalid credentials');
+      }
+
+      await _userProvider.setUser(response);
+    } catch (e) {
+      rethrow;
+    } finally {
+      authenticating = false;
+      inProgressEmailAndPassword = false;
+      notifyListeners();
+    }
+  }
 
   Future<void> loginWithGoogle() async {
-    status.value = AuthStatus.authenticating;
+    authenticating = true;
+    inProgressGoogle = true;
     notifyListeners();
 
-    final response = await _authRepository.loginWithGoogle();
-    //Significa que el usuario cancelo el inicio de sesión
-    if (response == null) {
-      status.value = AuthStatus.notAuthenticated;
+    try {
+      final response = await _authRepository.loginWithGoogle();
+      if (response == null) {
+        // throw Exception('Invalid credentials');
+        return;
+      }
+
+      await _userProvider.setUser(response);
+    } catch (e) {
+      rethrow;
+    } finally {
+      authenticating = false;
+      inProgressGoogle = false;
       notifyListeners();
-      return;
     }
-    print(response);
-    status.value = AuthStatus.authenticated;
-    notifyListeners();
-    // if (response.userCredential != null &&
-    //     response.userCredential?.user != null) {
-    //   errors.clear();
-    // } else {
-    //   if (!errors.contains('Ocurrio un error, intenta de nuevo.')) {
-    //     errors.add('Ocurrio un error, intenta de nuevo.');
-    //   }
-    //   status.value = AuthStatus.notAuthenticated;
-    // }
-    // notifyListeners();
+  }
+
+  Future<void> signOutUser() async {
+    await _authRepository.signOutUser();
+    await _userProvider.clearUser();
   }
 }

@@ -21,9 +21,14 @@ class MainApp extends StatelessWidget {
     Size size = MediaQuery.of(context).size;
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (_) => ReservaProvider()),
+        ChangeNotifierProvider(create: (_) => UserProvider()..renewUser()),
+        ChangeNotifierProxyProvider<UserProvider, ReservaProvider>(
+          create: (context) => ReservaProvider(context.read<UserProvider>()),
+          update: (context, userProvider, reservaProvider) => reservaProvider!
+            ..initialize(userProvider)
+            ..initSocket(userProvider),
+        ),
         ChangeNotifierProvider(create: (_) => BloqueosProvider()),
-        ChangeNotifierProvider(create: (_) => UserProvider()),
         ChangeNotifierProvider(create: (_) => AuthProvider()),
       ],
       child: ShadApp.router(
@@ -54,7 +59,7 @@ class MainApp extends StatelessWidget {
           buttonSizesTheme: ShadButtonSizesTheme(
             lg: ShadButtonSizeTheme(
               height: size.height * 0.06,
-              padding: EdgeInsets.symmetric(horizontal: 15),
+              padding: const EdgeInsets.symmetric(horizontal: 15),
             ),
           ),
           textTheme: ShadTextTheme(

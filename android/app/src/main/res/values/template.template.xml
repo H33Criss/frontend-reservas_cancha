@@ -3,5 +3,7 @@
     <!-- Create a empty, non-configured Web OAuth Token 
     Credential in the Google Cloud console, 
     (do this, even if you don't actually use a web client) -->
-    <string name="default_web_client_id">YOUR_GOOGLE_WEB_CLIENT_ID</string>
+
+    
+    <!-- <string name="default_web_client_id">YOUR_GOOGLE_WEB_CLIENT_ID</string> -->
 </resources>

@@ -14,6 +14,35 @@ class AuthRepository {
     ),
   );
 
+  Future<dynamic> loginWithEmailAndPassword(
+      String email, String password) async {
+    try {
+      final response = await dio.post(
+        '/auth/login',
+        data: {
+          'email': email,
+          'password': password,
+        },
+      );
+      if (response.statusCode == 200) {
+        return response.data;
+      } else {
+        print('response: $response');
+        print('Failed to authenticate with backend');
+      }
+    } catch (error) {
+      if (error is DioException) {
+        print('DioError: $error');
+        print('DioExcepcion: ${error.response?.data}');
+        throw Exception(error.response?.data['message'] ?? 'Unknown error');
+      } else {
+        print('Error desconocido: $error');
+        throw Exception('Unknown error');
+      }
+    }
+    return null;
+  }
+
   Future<dynamic> loginWithGoogle() async {
     await _googleSignIn.signOut();
     final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
@@ -36,12 +65,40 @@ class AuthRepository {
       }
     } catch (error) {
       if (error is DioException) {
-        print(error.response?.data);
+        print('DioError: $error');
+        print('DioExcepcion: ${error.response?.data}');
       } else {
         print('Error desconocido: $error');
       }
 
       return null;
     }
+  }
+
+  Future<dynamic> renewToken(String idToken) async {
+    try {
+      final response =
+          await dio.post('/auth/token/renew', data: {'idToken': idToken});
+      if (response.statusCode == 200) {
+        return response.data;
+      } else {
+        // Handle errors
+        print('Failed to renew token');
+        return null;
+      }
+    } catch (error) {
+      if (error is DioException) {
+        // Handle Dio errors
+        print(error.response?.data);
+      } else {
+        // Handle other errors
+        print('Unknown error: $error');
+      }
+      return null;
+    }
+  }
+
+  Future<void> signOutUser() async {
+    await GoogleSignIn().signOut();
   }
 }

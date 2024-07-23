@@ -10,13 +10,13 @@ class ButtonGoogleLogin extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final authProvider = context.watch<AuthProvider>();
-
     return ShadButton(
+      enabled: !authProvider.authenticating,
       onPressed: () async {
         await authProvider.loginWithGoogle();
       },
       size: ShadButtonSize.lg,
-      icon: authProvider.status.value == AuthStatus.authenticating
+      icon: authProvider.inProgressGoogle
           ? const Padding(
               padding: EdgeInsets.only(right: 8),
               child: SizedBox.square(
@@ -29,13 +29,16 @@ class ButtonGoogleLogin extends StatelessWidget {
           : null,
       text: Row(
         children: [
-          Image.asset(
-            'assets/images/google.webp',
-            width: 20,
-            height: 20,
-          ),
+          if (!authProvider.inProgressGoogle)
+            Image.asset(
+              'assets/images/google.webp',
+              width: 20,
+              height: 20,
+            ),
           const SizedBox(width: 10),
-          const Text('Continuar con Google'),
+          if (!authProvider.inProgressGoogle)
+            const Text('Continuar con Google'),
+          if (authProvider.inProgressGoogle) const Text('Cargando...'),
         ],
       ),
       // icon: Image.asset(
