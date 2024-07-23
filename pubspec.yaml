@@ -1,0 +1,44 @@
+name: pobla_app
+description: "A new Flutter project."
+publish_to: "none"
+version: 0.1.0
+
+environment:
+  sdk: ">=3.4.3 <4.0.0"
+
+dependencies:
+  animate_do: ^3.3.4
+  dio: ^5.5.0+1
+  flutter:
+    sdk: flutter
+  flutter_custom_clippers: ^2.1.0
+  flutter_dotenv: ^5.1.0
+  flutter_localizations:
+    sdk: flutter
+  go_router: ^14.2.1
+  google_sign_in: ^6.2.1
+  horizontal_week_calendar: ^0.0.17
+  intl: ^0.19.0
+  material_design_icons_flutter: ^7.0.7296
+  provider: ^6.1.2
+  shadcn_ui: ^0.6.3
+  simple_ripple_animation: ^0.0.9
+  socket_io_client: ^2.0.3+1
+  touch_ripple_effect: ^2.5.1
+
+dev_dependencies:
+  flutter_lints: ^3.0.0
+  flutter_test:
+    sdk: flutter
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/images/
+    - .env
+  fonts:
+    - family: Kanit
+      fonts:
+        - asset: assets/fonts/Kanit-Bold.ttf
+        - asset: assets/fonts/Kanit-Regular.ttf
+        - asset: assets/fonts/Kanit-Light.ttf

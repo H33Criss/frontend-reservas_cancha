@@ -1,0 +1,37 @@
+{
+  "project_info": {
+    "project_number": "YOUR_PROJECT_NUMBER",
+    "project_id": "YOUR_PROJECT_ID"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:YOUR_PROJECT_ID:android:YOUR_ANDROID_ID",
+        "android_client_info": {
+          "package_name": "com.example.YOUR_NAME_PACKAGE"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "YOUR_GOOGLE_CLIENT_ID",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.YOUR_NAME_PACKAGE",
+            "certificate_hash": "GENERATE_SHA-1"
+          }
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "YOUR_GOOGLE_API_KEY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
