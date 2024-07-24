@@ -2,10 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:pobla_app/config/environment/environment.dart';
 
-final GoogleSignIn _googleSignIn = GoogleSignIn(
-    // scopes: ['email', 'profile'],
-    // clientId: Environment.googleCliendId,
-    );
+final GoogleSignIn _googleSignIn = GoogleSignIn();
 
 class AuthRepository {
   final dio = Dio(
