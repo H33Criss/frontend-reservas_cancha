@@ -34,4 +34,16 @@ class ReservaModel {
       userId: reserva['user'],
     );
   }
+  factory ReservaModel.returnSentinel() {
+    return ReservaModel(
+      id: '',
+      diaSemana: '',
+      horaInicio: '',
+      horaFin: '',
+      fechaReserva: DateTime.now(),
+      pagada: false,
+      coste: 0,
+      userId: '',
+    );
+  }
 }

@@ -13,17 +13,23 @@ class HomeView extends StatelessWidget {
     Size size = MediaQuery.of(context).size;
     final textStyles = ShadTheme.of(context).textTheme;
     return SingleChildScrollView(
-      child: Padding(
-        padding: EdgeInsets.symmetric(
-            horizontal: size.width * 0.07, vertical: size.height * 0.03),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const BienvenidaWidget(),
-            SizedBox(height: size.height * 0.025),
-            const HorarioWidget(),
-            SizedBox(height: size.height * 0.03),
-            Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: EdgeInsets.symmetric(
+                horizontal: size.width * 0.07, vertical: size.height * 0.03),
+            child: const BienvenidaWidget(),
+          ),
+          SizedBox(height: size.height * 0.025),
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: size.width * 0.07),
+            child: const HorarioWidget(),
+          ),
+          SizedBox(height: size.height * 0.03),
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: size.width * 0.07),
+            child: Row(
               children: [
                 Text('Reservas próximas', style: textStyles.h4),
                 const Spacer(),
@@ -34,10 +40,13 @@ class HomeView extends StatelessWidget {
                 ),
               ],
             ),
-            SizedBox(height: size.height * 0.02),
-            const ProximasReservasWidget()
-          ],
-        ),
+          ),
+          SizedBox(height: size.height * 0.02),
+          Padding(
+            padding: EdgeInsets.only(left: size.width * 0.07),
+            child: const ProximasReservasWidget(),
+          )
+        ],
       ),
     );
   }

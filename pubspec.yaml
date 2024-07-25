@@ -8,7 +8,7 @@ environment:
 
 dependencies:
   animate_do: ^3.3.4
-  animated_loading_border: ^0.0.2
+  animated_icon: ^0.0.9
   dio: ^5.5.0+1
   flutter:
     sdk: flutter

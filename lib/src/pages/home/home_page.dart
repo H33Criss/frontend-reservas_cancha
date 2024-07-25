@@ -1,18 +1,20 @@
 import 'package:animate_do/animate_do.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_skeleton_ui/flutter_skeleton_ui.dart';
-import 'package:go_router/go_router.dart';
-import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:pobla_app/src/pages/home/views/home_view.dart';
-import 'package:pobla_app/src/pages/home/widgets/menu_desplegable.dart';
-import 'package:pobla_app/src/pages/home/widgets/side_menu.dart';
+import 'package:pobla_app/src/pages/home/widgets/common/side_menu.dart';
 import 'package:pobla_app/src/providers/providers.dart';
 import 'package:provider/provider.dart';
 import 'package:shadcn_ui/shadcn_ui.dart';
 
-class HomePage extends StatelessWidget {
+class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
+  @override
+  State<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     final userProvider = context.watch<UserProvider>();

@@ -3,6 +3,7 @@ import 'package:horizontal_week_calendar/horizontal_week_calendar.dart';
 import 'package:pobla_app/src/data/hours_definitions.dart';
 import 'package:pobla_app/src/pages/reservas/widgets/card_reserva.dart';
 import 'package:pobla_app/src/providers/providers.dart';
+import 'package:pobla_app/src/providers/reservas/mixin/socket_reserva_provider.dart';
 import 'package:pobla_app/src/utils/week_calculator.dart';
 import 'package:provider/provider.dart';
 import 'package:shadcn_ui/shadcn_ui.dart';
@@ -25,14 +26,20 @@ class _CalendarioReservasState extends State<CalendarioReservas> {
     super.initState();
     _reservaProvider = context.read<ReservaProvider>();
     _bloqueosProvider = context.read<BloqueosProvider>();
-    _reservaProvider.connect();
+    _reservaProvider.connect([
+      ReservasEvent.reservasOfAny,
+      ReservasEvent.newReservaOfAny,
+    ]);
     _bloqueosProvider.connect();
     _pageController = PageController(initialPage: _selectedDate.weekday - 1);
   }
 
   @override
   void dispose() {
-    _reservaProvider.disconnect();
+    _reservaProvider.disconnect([
+      ReservasEvent.reservasOfAny,
+      ReservasEvent.newReservaOfAny,
+    ]);
     _bloqueosProvider.disconnect();
     _pageController.dispose();
     super.dispose();
