@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:pobla_app/infrastructure/repositories/reservas_repository.dart';
 import 'package:pobla_app/src/providers/user/user_provider.dart';
 
+UserProvider _userProvider = UserProvider();
 //mixin, porque se separo la logica de socket y rest en 2 archivos
 //para conformar 1 provider, llamado "ReservaProvider"
 mixin RestReservaProvider on ChangeNotifier {
@@ -9,8 +10,8 @@ mixin RestReservaProvider on ChangeNotifier {
 
   bool creatingReserva = false;
 
-  void initialize(UserProvider userProvider) {
-    _reservasRepository = ReservasRepository(userProvider);
+  void initRest() {
+    _reservasRepository = ReservasRepository(_userProvider);
   }
 
   Future<void> editReservas() async {}

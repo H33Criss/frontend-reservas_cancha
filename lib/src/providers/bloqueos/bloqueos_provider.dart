@@ -9,16 +9,25 @@ UserProvider _userProvider = UserProvider();
 
 class BloqueosProvider with ChangeNotifier {
   List<BloqueoModel> bloqueos = [];
-  bool loadingBloqueos = true;
-  late IO.Socket _socket;
-  IO.Socket get socket => _socket;
-  Function get emit => _socket.emit;
+  bool loadingBloqueos = false;
 
-  BloqueosProvider() {
-    _initConfig();
+  IO.Socket? _socket;
+  IO.Socket? get socket => _socket;
+
+  initSocket() {
+    _userProvider.userListener.addListener(_updateSocket);
   }
 
-  void _initConfig() {
+  void _updateSocket() {
+    //Token del nuevo usuario en sesión
+    final token = _userProvider.user?.jwtToken;
+
+    // Si ya había una conexión de otro usuario, desconectamos
+    if (_socket != null && _socket!.connected) {
+      _disposeSocket();
+    }
+    // Si no hay token, no creamos una nueva conexión
+    if (token == null) return;
     const namespace = 'bloqueos';
 
     _socket = IO.io(
@@ -32,43 +41,58 @@ class BloqueosProvider with ChangeNotifier {
           .build(),
     );
 
-    socket.onConnect((_) {
-      // print('Conectado a /bloqueos');
-      // loadingBloqueos = true;
-      // notifyListeners();
-      socket.emit('loadBloqueos', {
-        'inicio': WeekCalculator.getWeekDates().inicio,
-        'fin': WeekCalculator.getWeekDates().fin,
-      });
+    _socket!.onConnect((_) {
+      print('Conectado a Bloqueos - ${_socket?.id ?? 'NO id'}');
     });
 
-    socket.onDisconnect((_) {
-      // print('Desconectado de /bloqueos');
+    _socket!.onDisconnect((_) {
+      print('Desconectado de Bloqueos');
     });
 
-    socket.on('loadedBloqueos', (data) {
+    _socket!.connect();
+  }
+
+  void _clearListeners() {
+    _socket?.off('loadedBloqueos');
+    _socket?.off('nuevoBloqueo');
+  }
+
+  void _registerListeners() {
+    loadingBloqueos = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) => notifyListeners());
+    //Solicitar todos los bloqueos por rango de fechas
+    _socket!.emit('loadBloqueos', {
+      'inicio': WeekCalculator.getWeekDates().inicio,
+      'fin': WeekCalculator.getWeekDates().fin,
+    });
+    //Recibir todos los bloqueos del rango de fechas
+    _socket!.on('loadedBloqueos', (data) {
       List<Map<String, dynamic>> bloqueosData =
           List<Map<String, dynamic>>.from(data);
       bloqueos = bloqueosData.map((r) => BloqueoModel.fromApi(r)).toList();
       loadingBloqueos = false;
-      notifyListeners();
-      // print('Datos recibidos BLOQUEOS: $bloqueos');
+      WidgetsBinding.instance.addPostFrameCallback((_) => notifyListeners());
     });
-
-    // Escuchar evento de nueva reserva
-    socket.on('nuevoBloqueo', (data) {
+    // Escuchar evento de un nuevo bloqueo
+    _socket!.on('nuevoBloqueo', (data) {
       BloqueoModel nuevoBloqueo = BloqueoModel.fromApi(data);
       bloqueos.add(nuevoBloqueo);
-      notifyListeners();
-      // print('Nuevo bloqueo recibido: $nuevoBloqueo');
+      WidgetsBinding.instance.addPostFrameCallback((_) => notifyListeners());
     });
   }
 
   void connect() {
-    _socket.connect();
+    _registerListeners();
   }
 
   void disconnect() {
-    _socket.disconnect();
+    _clearListeners();
+  }
+
+  void _disposeSocket() {
+    print('Dispose socket Bloqueos');
+    _clearListeners();
+    _socket?.disconnect();
+    _socket = null;
   }
 }

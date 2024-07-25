@@ -32,10 +32,11 @@ class UserProvider extends ChangeNotifier {
 
   Future<void> renewUser() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
+
     final String? idToken = prefs.getString('idToken');
     if (idToken == null) {
       renewingUser = false;
-      notifyListeners();
+      WidgetsBinding.instance.addPostFrameCallback((_) => notifyListeners());
       return;
     }
 
@@ -45,14 +46,14 @@ class UserProvider extends ChangeNotifier {
       // Failed to renew token
       await clearUser();
       renewingUser = false;
-      notifyListeners();
+      WidgetsBinding.instance.addPostFrameCallback((_) => notifyListeners());
       return;
     }
 
     // Update user data with new token
     await setUser(response);
     renewingUser = false;
-    notifyListeners();
+    WidgetsBinding.instance.addPostFrameCallback((_) => notifyListeners());
   }
 
   User? get user => userListener.value;

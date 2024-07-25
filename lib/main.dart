@@ -23,14 +23,9 @@ class MainApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => UserProvider()..renewUser()),
-        ChangeNotifierProxyProvider<UserProvider, ReservaProvider>(
-          create: (context) => ReservaProvider(context.read<UserProvider>()),
-          update: (context, userProvider, reservaProvider) => reservaProvider!
-            ..initialize(userProvider)
-            ..initSocket(userProvider),
-        ),
-        ChangeNotifierProvider(create: (_) => BloqueosProvider()),
         ChangeNotifierProvider(create: (_) => AuthProvider()),
+        ChangeNotifierProvider(create: (_) => BloqueosProvider()..initSocket()),
+        ChangeNotifierProvider(create: (_) => ReservaProvider()..initialize()),
       ],
       child: ShadApp.router(
         localizationsDelegates: const [
@@ -44,7 +39,6 @@ class MainApp extends StatelessWidget {
         ],
         theme: AppTheme.getShadTheme(size),
         themeMode: ThemeMode.dark,
-        // materialThemeBuilder: (context, theme) => AppTheme.getMaterialTheme(),
         darkTheme: AppTheme.getDarkShadTheme(size),
         locale: const Locale('es', 'ES'),
         routerConfig: mainRouter,

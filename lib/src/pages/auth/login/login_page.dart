@@ -26,6 +26,10 @@ class _LoginPageState extends State<LoginPage> {
     final theme = ShadTheme.of(context);
     //Don't delete that, this instance triggers ..renewUser().
     final userProvider = context.watch<UserProvider>();
+    //Don't delete that, this instance triggers ..initSocket().
+    final bloqueoProvider = context.watch<BloqueosProvider>();
+    //Don't delete that, this instance triggers ..initialize().
+    final reservaProvider = context.watch<ReservaProvider>();
     return Scaffold(
       body: userProvider.renewingUser
           ? const Center(child: CircularProgressIndicator(strokeWidth: 2))

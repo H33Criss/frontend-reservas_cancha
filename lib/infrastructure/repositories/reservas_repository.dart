@@ -6,7 +6,6 @@ class ReservasRepository {
   late Dio dio;
 
   ReservasRepository(UserProvider userProvider) {
-    _updateDio(userProvider);
     // Escucha cambios en el usuario y actualiza el Dio en consecuencia
     userProvider.userListener.addListener(() => _updateDio(userProvider));
   }
