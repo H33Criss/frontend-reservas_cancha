@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:pobla_app/infrastructure/repositories/auth_repository.dart';
 import 'package:pobla_app/src/providers/user/user_provider.dart';
@@ -18,7 +19,7 @@ class AuthProvider extends ChangeNotifier {
 
     try {
       //!DELETE in production
-      await Future.delayed(const Duration(seconds: 1));
+      // await Future.delayed(const Duration(seconds: 1));
       final response =
           await _authRepository.loginWithEmailAndPassword(email, password);
       if (response == null) {
@@ -27,7 +28,7 @@ class AuthProvider extends ChangeNotifier {
 
       await _userProvider.setUser(response);
     } catch (e) {
-      rethrow;
+      rethrow; // Re-lanzar la excepción original para otros errores
     } finally {
       authenticating = false;
       inProgressEmailAndPassword = false;
@@ -43,7 +44,7 @@ class AuthProvider extends ChangeNotifier {
     try {
       final response = await _authRepository.loginWithGoogle();
       if (response == null) {
-        // throw Exception('Invalid credentials');
+        // throw Exception('Sesión cancelada');
         return;
       }
 

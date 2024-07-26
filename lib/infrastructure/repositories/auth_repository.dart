@@ -8,6 +8,8 @@ class AuthRepository {
   final dio = Dio(
     BaseOptions(
       baseUrl: Environment.apiRestUrl,
+      connectTimeout: const Duration(seconds: 10),
+      receiveTimeout: const Duration(seconds: 10),
     ),
   );
 
@@ -26,18 +28,21 @@ class AuthRepository {
       } else {
         print('response: $response');
         print('Failed to authenticate with backend');
+        throw Exception('Invalid credentials');
       }
     } catch (error) {
       if (error is DioException) {
         print('DioError: $error');
-        print('DioExcepcion: ${error.response?.data}');
+        print('DioException: ${error.response?.data}');
+        if (error.type == DioExceptionType.connectionTimeout) {
+          throw Exception('Servidor bajo mantenimiento.');
+        }
         throw Exception(error.response?.data['message'] ?? 'Unknown error');
       } else {
         print('Error desconocido: $error');
-        throw Exception('Unknown error');
+        throw Exception('App Unknown error');
       }
     }
-    return null;
   }
 
   Future<dynamic> loginWithGoogle() async {
@@ -63,12 +68,15 @@ class AuthRepository {
     } catch (error) {
       if (error is DioException) {
         print('DioError: $error');
-        print('DioExcepcion: ${error.response?.data}');
+        print('DioException: ${error.response?.data}');
+        if (error.type == DioExceptionType.connectionTimeout) {
+          throw Exception('Servidor bajo mantenimiento.');
+        }
+        throw Exception(error.response?.data['message'] ?? 'Unknown error');
       } else {
         print('Error desconocido: $error');
+        throw Exception('App Unknown error');
       }
-
-      return null;
     }
   }
 

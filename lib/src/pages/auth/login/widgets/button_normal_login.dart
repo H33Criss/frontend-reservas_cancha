@@ -89,12 +89,11 @@ class ButtonNormalLogin extends StatelessWidget {
                         const Icon(Icons.warning_amber_rounded),
                         const SizedBox(width: 10),
                         Text(
-                          'Credenciales Incorrectas',
+                          e.toString().split(':')[1],
                           style: textStyles.titleMedium,
                         ),
                       ],
                     ),
-                    // description: Text('Credenciales Incorrectas.'),
                   ),
                 );
               }

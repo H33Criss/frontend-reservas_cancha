@@ -7,7 +7,7 @@ class UserProvider extends ChangeNotifier {
   bool renewingUser = true;
   final AuthRepository _authRepository = AuthRepository();
   ValueNotifier<User?> userListener = ValueNotifier<User?>(null);
-
+  User? get user => userListener.value;
   // ⬇ Esto es el singleton de UserProvider, para devolver siempre la misma instancia(en main_router) ⬇
   static final UserProvider _singleton = UserProvider._internal();
   factory UserProvider() {
@@ -31,30 +31,39 @@ class UserProvider extends ChangeNotifier {
   }
 
   Future<void> renewUser() async {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    try {
+      final SharedPreferences prefs = await SharedPreferences.getInstance();
+      final String? idToken = prefs.getString('idToken');
 
-    final String? idToken = prefs.getString('idToken');
-    if (idToken == null) {
-      renewingUser = false;
-      WidgetsBinding.instance.addPostFrameCallback((_) => notifyListeners());
-      return;
-    }
+      if (idToken == null) {
+        _handleRenewUserFailure();
+        return;
+      }
 
-    final response = await _authRepository.renewToken(idToken);
+      final response = await _authRepository.renewToken(idToken);
 
-    if (response == null) {
-      // Failed to renew token
+      if (response == null) {
+        // Failed to renew token
+        await clearUser();
+        _handleRenewUserFailure();
+        return;
+      }
+
+      // Update user data with new token
+      await setUser(response);
+    } catch (error) {
+      // Handle any exceptions
+      print('Error renewing user: $error');
       await clearUser();
+      _handleRenewUserFailure();
+    } finally {
       renewingUser = false;
       WidgetsBinding.instance.addPostFrameCallback((_) => notifyListeners());
-      return;
     }
+  }
 
-    // Update user data with new token
-    await setUser(response);
+  void _handleRenewUserFailure() {
     renewingUser = false;
     WidgetsBinding.instance.addPostFrameCallback((_) => notifyListeners());
   }
-
-  User? get user => userListener.value;
 }

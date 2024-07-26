@@ -9,11 +9,32 @@ class ButtonGoogleLogin extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final textStyles = Theme.of(context).textTheme;
     final authProvider = context.watch<AuthProvider>();
     return ShadButton(
       enabled: !authProvider.authenticating,
       onPressed: () async {
-        await authProvider.loginWithGoogle();
+        try {
+          await authProvider.loginWithGoogle();
+        } catch (e) {
+          if (!context.mounted) return;
+          ShadToaster.of(context).show(
+            ShadToast.destructive(
+              duration: const Duration(milliseconds: 1500),
+              title: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  const Icon(Icons.warning_amber_rounded),
+                  const SizedBox(width: 10),
+                  Text(
+                    e.toString().split(':')[1],
+                    style: textStyles.titleMedium,
+                  ),
+                ],
+              ),
+            ),
+          );
+        }
       },
       size: ShadButtonSize.lg,
       icon: authProvider.inProgressGoogle
