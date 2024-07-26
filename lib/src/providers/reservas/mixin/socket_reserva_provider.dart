@@ -4,7 +4,7 @@ import 'package:pobla_app/infrastructure/models/reserva.model.dart';
 import 'package:pobla_app/src/helpers/reservas/reservas_helper.dart';
 import 'package:pobla_app/src/providers/providers.dart';
 import 'package:pobla_app/src/utils/week_calculator.dart';
-import 'package:socket_io_client/socket_io_client.dart' as IO;
+import 'package:socket_io_client/socket_io_client.dart' as io;
 
 UserProvider _userProvider = UserProvider();
 
@@ -23,8 +23,8 @@ mixin SocketReservaProvider on ChangeNotifier {
   List<ReservaModel> reservasOfUser = [];
   bool loadingReservas = false;
   bool loadingReservasOfUser = false;
-  IO.Socket? _socket;
-  IO.Socket? get socket => _socket;
+  io.Socket? _socket;
+  io.Socket? get socket => _socket;
 
   void initSocket() {
     //Para que cada vez que el usuario cambie, creo un nuevo socket, con otro token
@@ -44,9 +44,9 @@ mixin SocketReservaProvider on ChangeNotifier {
 
     // Conexión con el servidor, pero para el namespace reservas
     const namespace = 'reservas';
-    _socket = IO.io(
+    _socket = io.io(
       '${Environment.apiSocketUrl}/$namespace',
-      IO.OptionBuilder()
+      io.OptionBuilder()
           .setTransports(['websocket'])
           .disableAutoConnect()
           .disableForceNew()

@@ -1,4 +1,3 @@
-import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:pobla_app/infrastructure/repositories/auth_repository.dart';
 import 'package:pobla_app/src/providers/user/user_provider.dart';

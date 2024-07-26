@@ -3,7 +3,7 @@ import 'package:pobla_app/config/environment/environment.dart';
 import 'package:pobla_app/infrastructure/models/bloqueo.model.dart';
 import 'package:pobla_app/src/providers/user/user_provider.dart';
 import 'package:pobla_app/src/utils/week_calculator.dart';
-import 'package:socket_io_client/socket_io_client.dart' as IO;
+import 'package:socket_io_client/socket_io_client.dart' as io;
 
 UserProvider _userProvider = UserProvider();
 
@@ -11,8 +11,8 @@ class BloqueosProvider with ChangeNotifier {
   List<BloqueoModel> bloqueos = [];
   bool loadingBloqueos = false;
 
-  IO.Socket? _socket;
-  IO.Socket? get socket => _socket;
+  io.Socket? _socket;
+  io.Socket? get socket => _socket;
 
   initSocket() {
     _userProvider.userListener.addListener(_updateSocket);
@@ -30,9 +30,9 @@ class BloqueosProvider with ChangeNotifier {
     if (token == null) return;
     const namespace = 'bloqueos';
 
-    _socket = IO.io(
+    _socket = io.io(
       '${Environment.apiSocketUrl}/$namespace',
-      IO.OptionBuilder()
+      io.OptionBuilder()
           .setTransports(['websocket'])
           .disableAutoConnect() // Disable auto-connection
           .setExtraHeaders({

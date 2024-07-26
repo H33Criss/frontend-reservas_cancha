@@ -27,7 +27,7 @@ class _ShadInputPasswordState extends State<ShadInputPassword> {
         child: ShadImage.square(size: 16, LucideIcons.lock),
       ),
       validator: (value) {
-        if (ValidatorsForm.isPasswordDefined(value!)) {
+        if (ValidatorsForm.isPasswordDefined(value)) {
           return 'Debes ingresar una contraseña';
         }
         return null;

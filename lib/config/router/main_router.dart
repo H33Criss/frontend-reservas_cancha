@@ -1,8 +1,6 @@
 import 'package:go_router/go_router.dart';
 import 'package:pobla_app/src/pages/pages.dart';
 import 'package:pobla_app/src/providers/providers.dart';
-import 'package:pobla_app/src/providers/reservas/mixin/socket_reserva_provider.dart';
-import 'package:provider/provider.dart';
 
 UserProvider _userProvider = UserProvider();
 

@@ -16,7 +16,6 @@ class SideMenu extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = ShadTheme.of(context);
     Size size = MediaQuery.of(context).size;
     final userProvider = context.watch<UserProvider>();
     final authProvider = context.watch<AuthProvider>();
@@ -38,8 +37,8 @@ class SideMenu extends StatelessWidget {
         title: const Text('Edit Profile'),
         description: const Text(
             "Make changes to your profile here. Click save when you're done"),
-        content: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 20),
+        content: const Padding(
+          padding: EdgeInsets.symmetric(vertical: 20),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
