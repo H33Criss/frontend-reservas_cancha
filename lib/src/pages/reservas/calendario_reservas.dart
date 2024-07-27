@@ -1,7 +1,10 @@
+import 'package:animated_icon/animated_icon.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_skeleton_ui/flutter_skeleton_ui.dart';
 import 'package:horizontal_week_calendar/horizontal_week_calendar.dart';
 import 'package:pobla_app/src/data/hours_definitions.dart';
 import 'package:pobla_app/src/pages/reservas/widgets/card_reserva.dart';
+import 'package:pobla_app/src/pages/reservas/widgets/card_reserva_skeleton.dart';
 import 'package:pobla_app/src/providers/providers.dart';
 import 'package:pobla_app/src/providers/reservas/mixin/socket_reserva_provider.dart';
 import 'package:pobla_app/src/utils/week_calculator.dart';
@@ -26,11 +29,7 @@ class _CalendarioReservasState extends State<CalendarioReservas> {
     super.initState();
     _reservaProvider = context.read<ReservaProvider>();
     _bloqueosProvider = context.read<BloqueosProvider>();
-    _reservaProvider.connect([
-      ReservasEvent.reservasOfAny,
-      ReservasEvent.newReservaOfAny,
-    ]);
-    _bloqueosProvider.connect();
+    _initConnectionSocket(false);
     _pageController = PageController(initialPage: _selectedDate.weekday - 1);
   }
 
@@ -43,6 +42,21 @@ class _CalendarioReservasState extends State<CalendarioReservas> {
     _bloqueosProvider.disconnect();
     _pageController.dispose();
     super.dispose();
+  }
+
+  void _initConnectionSocket(bool renew) {
+    if (renew) {
+      _reservaProvider.disconnect([
+        ReservasEvent.reservasOfAny,
+        ReservasEvent.newReservaOfAny,
+      ]);
+      _bloqueosProvider.disconnect();
+    }
+    _reservaProvider.connect([
+      ReservasEvent.reservasOfAny,
+      ReservasEvent.newReservaOfAny,
+    ]);
+    _bloqueosProvider.connect();
   }
 
   void _onDateChange(DateTime date) {
@@ -63,6 +77,7 @@ class _CalendarioReservasState extends State<CalendarioReservas> {
     final bloqueosProvider = context.watch<BloqueosProvider>();
     final reservaProvider = context.watch<ReservaProvider>();
     final weekData = WeekCalculator.getWeekDates();
+    Size size = MediaQuery.of(context).size;
     return Scaffold(
       appBar: AppBar(
         title: const Text('Horario'),
@@ -93,30 +108,56 @@ class _CalendarioReservasState extends State<CalendarioReservas> {
             inactiveBackgroundColor: theme.colorScheme.muted.withOpacity(.1),
           ),
           Expanded(
-            child: reservaProvider.loadingReservas ||
-                    bloqueosProvider.loadingBloqueos
-                ? const Center(child: CircularProgressIndicator())
-                : PageView.builder(
-                    physics: const NeverScrollableScrollPhysics(),
-                    controller: _pageController,
-                    itemCount: 7, // Número de días en la semana
-                    itemBuilder: (context, index) {
-                      return Padding(
-                        padding: const EdgeInsets.only(top: 20),
-                        child: ListView.builder(
-                          itemCount: hoursDefinitions.length,
-                          itemBuilder: (context, i) {
-                            final hour = hoursDefinitions[i];
-                            return CardReserva(
-                              hour: hour,
-                              index: i,
-                              selectedDate: _selectedDate,
-                            );
+            child: Skeleton(
+              isLoading: reservaProvider.loadingReservas ||
+                  bloqueosProvider.loadingBloqueos,
+              skeleton: const CardReservaSkeleton(),
+              child: reservaProvider.connectionTimeOut
+                  ? Column(
+                      children: [
+                        SizedBox(
+                          height: size.height * 0.2,
+                        ),
+                        AnimateIcon(
+                          key: UniqueKey(),
+                          onTap: () {},
+                          iconType: IconType.continueAnimation,
+                          height: 50,
+                          width: 50,
+                          color: theme.colorScheme.primary,
+                          animateIcon: AnimateIcons.error,
+                        ),
+                        Text('Ocurrio un error', style: theme.textTheme.h3),
+                        ShadButton(
+                          text: const Text('Intentar de nuevo'),
+                          onPressed: () {
+                            _initConnectionSocket(true);
                           },
                         ),
-                      );
-                    },
-                  ),
+                      ],
+                    )
+                  : PageView.builder(
+                      physics: const NeverScrollableScrollPhysics(),
+                      controller: _pageController,
+                      itemCount: 7, // Número de días en la semana
+                      itemBuilder: (context, index) {
+                        return Padding(
+                          padding: const EdgeInsets.only(top: 20),
+                          child: ListView.builder(
+                            itemCount: hoursDefinitions.length,
+                            itemBuilder: (context, i) {
+                              final hour = hoursDefinitions[i];
+                              return CardReserva(
+                                hour: hour,
+                                index: i,
+                                selectedDate: _selectedDate,
+                              );
+                            },
+                          ),
+                        );
+                      },
+                    ),
+            ),
           ),
         ],
       ),
