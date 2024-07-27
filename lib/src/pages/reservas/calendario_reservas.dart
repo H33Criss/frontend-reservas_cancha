@@ -1,4 +1,3 @@
-import 'package:animated_icon/animated_icon.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_skeleton_ui/flutter_skeleton_ui.dart';
 import 'package:horizontal_week_calendar/horizontal_week_calendar.dart';
@@ -7,6 +6,7 @@ import 'package:pobla_app/src/pages/reservas/widgets/card_reserva.dart';
 import 'package:pobla_app/src/pages/reservas/widgets/card_reserva_skeleton.dart';
 import 'package:pobla_app/src/providers/providers.dart';
 import 'package:pobla_app/src/providers/reservas/mixin/socket_reserva_provider.dart';
+import 'package:pobla_app/src/shared/widgets/connection_timeout.dart';
 import 'package:pobla_app/src/utils/week_calculator.dart';
 import 'package:provider/provider.dart';
 import 'package:shadcn_ui/shadcn_ui.dart';
@@ -72,12 +72,13 @@ class _CalendarioReservasState extends State<CalendarioReservas> {
 
   @override
   Widget build(BuildContext context) {
+    Size size = MediaQuery.of(context).size;
     final textStyles = Theme.of(context).textTheme;
     final theme = ShadTheme.of(context);
     final bloqueosProvider = context.watch<BloqueosProvider>();
     final reservaProvider = context.watch<ReservaProvider>();
     final weekData = WeekCalculator.getWeekDates();
-    Size size = MediaQuery.of(context).size;
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Horario'),
@@ -112,29 +113,11 @@ class _CalendarioReservasState extends State<CalendarioReservas> {
               isLoading: reservaProvider.loadingReservas ||
                   bloqueosProvider.loadingBloqueos,
               skeleton: const CardReservaSkeleton(),
-              child: reservaProvider.connectionTimeOut
-                  ? Column(
-                      children: [
-                        SizedBox(
-                          height: size.height * 0.2,
-                        ),
-                        AnimateIcon(
-                          key: UniqueKey(),
-                          onTap: () {},
-                          iconType: IconType.continueAnimation,
-                          height: 50,
-                          width: 50,
-                          color: theme.colorScheme.primary,
-                          animateIcon: AnimateIcons.error,
-                        ),
-                        Text('Ocurrio un error', style: theme.textTheme.h3),
-                        ShadButton(
-                          text: const Text('Intentar de nuevo'),
-                          onPressed: () {
-                            _initConnectionSocket(true);
-                          },
-                        ),
-                      ],
+              child: reservaProvider
+                      .connectionTimeouts[ReservasEvent.reservasOfAny]!
+                  ? ConnectionTimeoutWidget(
+                      tryAgainFunction: _initConnectionSocket,
+                      topSeparation: size.height * 0.2,
                     )
                   : PageView.builder(
                       physics: const NeverScrollableScrollPhysics(),

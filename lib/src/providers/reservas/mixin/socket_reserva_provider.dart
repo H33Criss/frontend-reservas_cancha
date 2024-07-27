@@ -25,12 +25,16 @@ mixin SocketReservaProvider on ChangeNotifier {
   List<ReservaModel> reservasOfUser = [];
   bool loadingReservas = false;
   bool loadingReservasOfUser = false;
-  bool connectionTimeOut = false;
+  // bool connectionTimeOut = false;
   io.Socket? _socket;
   io.Socket? get socket => _socket;
 
   //Gestiona el connection-timeout de los eventos
   final Map<ReservasEvent, Timer?> _timers = {};
+  final Map<ReservasEvent, bool> connectionTimeouts = {
+    ReservasEvent.reservasOfAny: false,
+    ReservasEvent.reservasOfUser: false,
+  };
 
   void initSocket() {
     //Para que cada vez que el usuario cambie, creo un nuevo socket, con otro token
@@ -168,10 +172,11 @@ mixin SocketReservaProvider on ChangeNotifier {
   }
 
   void _disposeSocket() {
-    print('Dispose socket Reservas');
     _clearAllListeners();
     _socket?.disconnect();
     _socket = null;
+    reservasOfUser.clear();
+    reservas.clear();
   }
 
   void _handleReservasOfUser() {
@@ -186,7 +191,7 @@ mixin SocketReservaProvider on ChangeNotifier {
         Timer(const Duration(seconds: 10), () {
       if (loadingReservasOfUser) {
         loadingReservasOfUser = false;
-        connectionTimeOut = true;
+        connectionTimeouts[ReservasEvent.reservasOfUser] = true;
         WidgetsBinding.instance.addPostFrameCallback((_) => notifyListeners());
         print('Error: El servidor no respondió a tiempo');
       }
@@ -201,7 +206,7 @@ mixin SocketReservaProvider on ChangeNotifier {
       reservasOfUser =
           reservasData.map((r) => ReservaModel.fromApi(r)).toList();
       loadingReservasOfUser = false;
-      connectionTimeOut = false;
+      connectionTimeouts[ReservasEvent.reservasOfUser] = false;
       WidgetsBinding.instance.addPostFrameCallback((_) => notifyListeners());
     });
   }
@@ -218,7 +223,7 @@ mixin SocketReservaProvider on ChangeNotifier {
         Timer(const Duration(seconds: 10), () {
       if (loadingReservas) {
         loadingReservas = false;
-        connectionTimeOut = true;
+        connectionTimeouts[ReservasEvent.reservasOfAny] = true;
         WidgetsBinding.instance.addPostFrameCallback((_) => notifyListeners());
         print('Error: El servidor no respondió a tiempo');
       }
@@ -230,7 +235,7 @@ mixin SocketReservaProvider on ChangeNotifier {
           List<Map<String, dynamic>>.from(data);
       reservas = reservasData.map((r) => ReservaModel.fromApi(r)).toList();
       loadingReservas = false;
-      connectionTimeOut = false;
+      connectionTimeouts[ReservasEvent.reservasOfAny] = false;
       WidgetsBinding.instance.addPostFrameCallback((_) => notifyListeners());
     });
   }
