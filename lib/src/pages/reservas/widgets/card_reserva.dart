@@ -4,7 +4,7 @@ import 'package:material_design_icons_flutter/material_design_icons_flutter.dart
 import 'package:pobla_app/src/data/hours_definitions.dart';
 import 'package:pobla_app/src/pages/reservas/widgets/menu_confirmacion.dart';
 import 'package:pobla_app/src/providers/providers.dart';
-import 'package:pobla_app/src/utils/managment_card_reserva.dart';
+import 'package:pobla_app/src/helpers/reservas/managment_card_reserva.dart';
 import 'package:provider/provider.dart';
 import 'package:shadcn_ui/shadcn_ui.dart';
 
@@ -48,8 +48,8 @@ class CardReserva extends StatelessWidget {
           text: Text('Hora inactiva'),
         ),
       );
-    } else if (ManagementCardReserva.isOwnReservationPast(
-        selectedDate, hour, reservaProvider.reservas, userProvider.user!.id)) {
+    } else if (ManagementCardReserva.isOwnReservationPast(selectedDate, hour,
+        reservaProvider.reservasHorario, userProvider.user!.id)) {
       canchaWidget = Cancha(
         tooltipText: 'Esta fue una de tus reservas.',
         selectedDate: selectedDate,
@@ -67,8 +67,8 @@ class CardReserva extends StatelessWidget {
           text: Text('Una de tus reservas anteriores.'),
         ),
       );
-    } else if (ManagementCardReserva.isOwnReservation(
-        selectedDate, hour, reservaProvider.reservas, userProvider.user!.id)) {
+    } else if (ManagementCardReserva.isOwnReservation(selectedDate, hour,
+        reservaProvider.reservasHorario, userProvider.user!.id)) {
       canchaWidget = Cancha(
         tooltipText: 'Haz reservado esta hora.',
         selectedDate: selectedDate,
@@ -87,7 +87,7 @@ class CardReserva extends StatelessWidget {
         ),
       );
     } else if (ManagementCardReserva.isTaken(
-        selectedDate, hour, reservaProvider.reservas)) {
+        selectedDate, hour, reservaProvider.reservasHorario)) {
       canchaWidget = Cancha(
         tooltipText: 'Horario reservado para otro usuario.',
         selectedDate: selectedDate,
@@ -130,7 +130,7 @@ class CardReserva extends StatelessWidget {
         ),
       );
     } else if (ManagementCardReserva.hasReservationOnDate(
-        selectedDate, reservaProvider.reservas, userProvider.user!.id)) {
+        selectedDate, reservaProvider.reservasHorario, userProvider.user!.id)) {
       canchaWidget = Cancha(
         tooltipText: 'Solo se permite 1 reserva diaria.',
         selectedDate: selectedDate,

@@ -76,7 +76,7 @@ class HorarioWidget extends StatelessWidget {
             size: ShadButtonSize.sm,
             icon: const Icon(LucideIcons.arrowRight),
             text: const Text('Ir al Horario'),
-            onPressed: () => context.push('/calendario-reservas'),
+            onPressed: () => context.push('/horario-reservas'),
           ),
         ],
       ),

@@ -1,4 +1,6 @@
+export 'package:pobla_app/src/pages/reservas/views/reserva_by_id.dart';
+
 export 'package:pobla_app/src/pages/auth/login/login_page.dart';
 
 export 'package:pobla_app/src/pages/home/home_page.dart';
-export 'package:pobla_app/src/pages/reservas/calendario_reservas.dart';
+export 'package:pobla_app/src/pages/reservas/views/horario_reservas.dart';

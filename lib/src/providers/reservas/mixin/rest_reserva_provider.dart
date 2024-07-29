@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:pobla_app/infrastructure/models/reserva.model.dart';
 import 'package:pobla_app/infrastructure/repositories/reservas_repository.dart';
 import 'package:pobla_app/src/providers/user/user_provider.dart';
 
@@ -9,6 +10,7 @@ mixin RestReservaProvider on ChangeNotifier {
   late ReservasRepository _reservasRepository;
 
   bool creatingReserva = false;
+  bool loadingReserva = false;
 
   void initRest() {
     _reservasRepository = ReservasRepository(_userProvider);
@@ -27,6 +29,16 @@ mixin RestReservaProvider on ChangeNotifier {
     } finally {
       creatingReserva = false;
       notifyListeners();
+    }
+  }
+
+  Future<ReservaModel?> getReservaById(String id) async {
+    try {
+      final reserva = await _reservasRepository.getReservaById(id);
+      return reserva;
+    } catch (error) {
+      print('Error al obtener reserva: $error');
+      return null;
     }
   }
 }

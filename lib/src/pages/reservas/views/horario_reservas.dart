@@ -11,14 +11,14 @@ import 'package:pobla_app/src/utils/week_calculator.dart';
 import 'package:provider/provider.dart';
 import 'package:shadcn_ui/shadcn_ui.dart';
 
-class CalendarioReservas extends StatefulWidget {
-  const CalendarioReservas({super.key});
+class HorarioReservas extends StatefulWidget {
+  const HorarioReservas({super.key});
 
   @override
-  State<CalendarioReservas> createState() => _CalendarioReservasState();
+  State<HorarioReservas> createState() => _HorarioReservasState();
 }
 
-class _CalendarioReservasState extends State<CalendarioReservas> {
+class _HorarioReservasState extends State<HorarioReservas> {
   late ReservaProvider _reservaProvider;
   late BloqueosProvider _bloqueosProvider;
   late PageController _pageController;
@@ -36,8 +36,8 @@ class _CalendarioReservasState extends State<CalendarioReservas> {
   @override
   void dispose() {
     _reservaProvider.disconnect([
-      ReservasEvent.reservasOfAny,
-      ReservasEvent.newReservaOfAny,
+      ReservasEvent.reservasHorario,
+      ReservasEvent.newReservaHorario,
     ]);
     _bloqueosProvider.disconnect();
     _pageController.dispose();
@@ -47,14 +47,14 @@ class _CalendarioReservasState extends State<CalendarioReservas> {
   void _initConnectionSocket(bool renew) {
     if (renew) {
       _reservaProvider.disconnect([
-        ReservasEvent.reservasOfAny,
-        ReservasEvent.newReservaOfAny,
+        ReservasEvent.reservasHorario,
+        ReservasEvent.newReservaHorario,
       ]);
       _bloqueosProvider.disconnect();
     }
     _reservaProvider.connect([
-      ReservasEvent.reservasOfAny,
-      ReservasEvent.newReservaOfAny,
+      ReservasEvent.reservasHorario,
+      ReservasEvent.newReservaHorario,
     ]);
     _bloqueosProvider.connect();
   }
@@ -73,20 +73,25 @@ class _CalendarioReservasState extends State<CalendarioReservas> {
   @override
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
-    final textStyles = Theme.of(context).textTheme;
     final theme = ShadTheme.of(context);
+    final textStyles = ShadTheme.of(context).textTheme;
     final bloqueosProvider = context.watch<BloqueosProvider>();
     final reservaProvider = context.watch<ReservaProvider>();
     final weekData = WeekCalculator.getWeekDates();
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Horario'),
+        title: Text(
+          'Horario',
+          style: textStyles.h3,
+        ),
         actions: [
           ShadBadge.outline(
             padding: const EdgeInsets.symmetric(horizontal: 30),
-            text: Text(monthNames[DateTime.now().month - 1],
-                style: textStyles.headlineSmall),
+            text: Text(
+              monthNames[DateTime.now().month - 1],
+              style: textStyles.h4,
+            ),
           ),
         ],
       ),
@@ -110,11 +115,11 @@ class _CalendarioReservasState extends State<CalendarioReservas> {
           ),
           Expanded(
             child: Skeleton(
-              isLoading: reservaProvider.loadingReservas ||
+              isLoading: reservaProvider.loadingReservasHorario ||
                   bloqueosProvider.loadingBloqueos,
               skeleton: const CardReservaSkeleton(),
               child: reservaProvider
-                      .connectionTimeouts[ReservasEvent.reservasOfAny]!
+                      .connectionTimeouts[ReservasEvent.reservasHorario]!
                   ? ConnectionTimeoutWidget(
                       tryAgainFunction: _initConnectionSocket,
                       topSeparation: size.height * 0.2,

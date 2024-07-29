@@ -2,6 +2,7 @@ import 'package:animate_do/animate_do.dart';
 import 'package:animated_icon/animated_icon.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_skeleton_ui/flutter_skeleton_ui.dart';
+import 'package:go_router/go_router.dart';
 import 'package:pobla_app/src/data/hours_definitions.dart';
 import 'package:pobla_app/src/providers/providers.dart';
 import 'package:pobla_app/src/providers/reservas/mixin/socket_reserva_provider.dart';
@@ -30,8 +31,8 @@ class _ProximasReservasWidgetState extends State<ProximasReservasWidget> {
   @override
   void dispose() {
     _reservaProvider.disconnect([
-      ReservasEvent.reservasOfUser,
-      ReservasEvent.newReservaOfUser,
+      ReservasEvent.reservasProximas,
+      ReservasEvent.newReservaProxima,
     ]);
     super.dispose();
   }
@@ -39,13 +40,13 @@ class _ProximasReservasWidgetState extends State<ProximasReservasWidget> {
   void _initSocketConnection(bool renew) {
     if (renew) {
       _reservaProvider.disconnect([
-        ReservasEvent.reservasOfUser,
-        ReservasEvent.newReservaOfUser,
+        ReservasEvent.reservasProximas,
+        ReservasEvent.newReservaProxima,
       ]);
     }
     _reservaProvider.connect([
-      ReservasEvent.reservasOfUser,
-      ReservasEvent.newReservaOfUser,
+      ReservasEvent.reservasProximas,
+      ReservasEvent.newReservaProxima,
     ]);
   }
 
@@ -59,7 +60,7 @@ class _ProximasReservasWidgetState extends State<ProximasReservasWidget> {
       width: double.infinity,
       height: size.height * 0.28,
       child: Skeleton(
-        isLoading: reservaProvider.loadingReservasOfUser,
+        isLoading: reservaProvider.loadingReservasProximas,
         skeleton: ListView(
           scrollDirection: Axis.horizontal,
           children: [
@@ -80,7 +81,8 @@ class _ProximasReservasWidgetState extends State<ProximasReservasWidget> {
             ),
           ],
         ),
-        child: reservaProvider.connectionTimeouts[ReservasEvent.reservasOfUser]!
+        child: reservaProvider
+                .connectionTimeouts[ReservasEvent.reservasProximas]!
             ? ConnectionTimeoutWidget(
                 tryAgainFunction: _initSocketConnection,
                 topSeparation: size.height * 0.05,
@@ -88,124 +90,131 @@ class _ProximasReservasWidgetState extends State<ProximasReservasWidget> {
             : ListView.builder(
                 physics: const BouncingScrollPhysics(),
                 scrollDirection: Axis.horizontal,
-                itemCount: reservaProvider.reservasOfUser.length,
+                itemCount: reservaProvider.reservasProximas.length,
                 itemBuilder: (context, i) {
-                  final reserva = reservaProvider.reservasOfUser[i];
+                  final reserva = reservaProvider.reservasProximas[i];
                   return ZoomIn(
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: colors.border,
-                        borderRadius: BorderRadius.circular(30),
-                      ),
-                      width: size.width * 0.45,
-                      height: double.infinity,
-                      margin: const EdgeInsets.symmetric(horizontal: 5),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(30),
-                        child: Stack(
-                          children: [
-                            ..._BackgroundCircles._buildCircles(context),
-                            Positioned(
-                              left: 0,
-                              right: 0,
-                              top: 0,
-                              bottom: 0,
-                              child: Container(
-                                padding: const EdgeInsets.all(20),
-                                child: Column(
-                                  children: [
-                                    Row(
-                                      children: [
-                                        Container(
-                                          padding: const EdgeInsets.all(5),
-                                          decoration: BoxDecoration(
-                                            color: Colors.white.withOpacity(.1),
-                                            borderRadius:
-                                                BorderRadius.circular(10),
+                    child: InkResponse(
+                      borderRadius: BorderRadius.circular(30),
+                      radius: 50,
+                      onTap: () => context.push('/reserva/${reserva.id}'),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: colors.border,
+                          borderRadius: BorderRadius.circular(30),
+                        ),
+                        width: size.width * 0.45,
+                        height: double.infinity,
+                        margin: const EdgeInsets.symmetric(horizontal: 5),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(30),
+                          child: Stack(
+                            children: [
+                              ..._BackgroundCircles._buildCircles(context),
+                              Positioned(
+                                left: 0,
+                                right: 0,
+                                top: 0,
+                                bottom: 0,
+                                child: Container(
+                                  padding: const EdgeInsets.all(20),
+                                  child: Column(
+                                    children: [
+                                      Row(
+                                        children: [
+                                          Container(
+                                            padding: const EdgeInsets.all(5),
+                                            decoration: BoxDecoration(
+                                              color:
+                                                  Colors.white.withOpacity(.1),
+                                              borderRadius:
+                                                  BorderRadius.circular(10),
+                                            ),
+                                            child: AnimateIcon(
+                                              key: UniqueKey(),
+                                              onTap: () {},
+                                              iconType:
+                                                  IconType.continueAnimation,
+                                              height: 20,
+                                              width: 20,
+                                              color: colors.primary,
+                                              animateIcon: AnimateIcons.bell,
+                                            ),
                                           ),
-                                          child: AnimateIcon(
-                                            key: UniqueKey(),
-                                            onTap: () {},
-                                            iconType:
-                                                IconType.continueAnimation,
-                                            height: 20,
-                                            width: 20,
-                                            color: colors.primary,
-                                            animateIcon: AnimateIcons.bell,
+                                          const SizedBox(width: 5),
+                                          Text('Reserva', style: textStyles.h4),
+                                        ],
+                                      ),
+                                      SizedBox(height: size.height * 0.02),
+                                      RichText(
+                                        text: TextSpan(children: [
+                                          TextSpan(
+                                            text: reserva.horaInicio,
+                                            style: textStyles.h4,
                                           ),
-                                        ),
-                                        const SizedBox(width: 5),
-                                        Text('Reserva', style: textStyles.h4),
-                                      ],
-                                    ),
-                                    SizedBox(height: size.height * 0.02),
-                                    RichText(
-                                      text: TextSpan(children: [
-                                        TextSpan(
-                                          text: reserva.horaInicio,
-                                          style: textStyles.h4,
-                                        ),
-                                        TextSpan(
-                                          text: ' - ',
-                                          style: textStyles.h4,
-                                        ),
-                                        TextSpan(
-                                          text: reserva.horaFin,
-                                          style: textStyles.h4,
-                                        ),
-                                      ]),
-                                    ),
-                                    const Spacer(),
-                                    RippleAnimation(
-                                        color: colors.muted.withOpacity(.5),
-                                        delay:
-                                            const Duration(milliseconds: 300),
-                                        repeat: true,
-                                        minRadius: 30,
-                                        ripplesCount: 1,
-                                        duration: const Duration(
-                                            milliseconds: 6 * 300),
-                                        child: Container(
-                                          decoration: BoxDecoration(
-                                            shape: BoxShape.circle,
-                                            color: colors.muted.withOpacity(.5),
+                                          TextSpan(
+                                            text: ' - ',
+                                            style: textStyles.h4,
                                           ),
-                                          width: size.height * 0.1,
-                                          height: size.height * 0.1,
-                                          child: Column(
-                                            // mainAxisAlignment:
-                                            //     MainAxisAlignment.center,
-                                            children: [
-                                              SizedBox(
-                                                height: size.height * 0.03,
-                                              ),
-                                              Text(
-                                                'Faltan',
-                                                style: textStyles.small,
-                                                textAlign: TextAlign.center,
-                                              ),
-                                              Text(
-                                                DateTimeUtility
-                                                    .timeUntilReservation(
-                                                        reserva.fechaReserva,
-                                                        reserva.horaInicio),
-                                                style: textStyles.small,
-                                                textAlign: TextAlign.center,
-                                              ),
-                                            ],
+                                          TextSpan(
+                                            text: reserva.horaFin,
+                                            style: textStyles.h4,
                                           ),
-                                        )),
-                                    const Spacer(),
-                                    Text(
-                                      '${weekDayNames[reserva.fechaReserva.weekday - 1]} ${reserva.fechaReserva.day} de ${monthNames[reserva.fechaReserva.month - 1]}',
-                                      style: textStyles.small
-                                          .copyWith(color: Colors.white54),
-                                    ),
-                                  ],
+                                        ]),
+                                      ),
+                                      const Spacer(),
+                                      RippleAnimation(
+                                          color: colors.muted.withOpacity(.5),
+                                          delay:
+                                              const Duration(milliseconds: 300),
+                                          repeat: true,
+                                          minRadius: 30,
+                                          ripplesCount: 1,
+                                          duration: const Duration(
+                                              milliseconds: 6 * 300),
+                                          child: Container(
+                                            decoration: BoxDecoration(
+                                              shape: BoxShape.circle,
+                                              color:
+                                                  colors.muted.withOpacity(.5),
+                                            ),
+                                            width: size.height * 0.1,
+                                            height: size.height * 0.1,
+                                            child: Column(
+                                              // mainAxisAlignment:
+                                              //     MainAxisAlignment.center,
+                                              children: [
+                                                SizedBox(
+                                                  height: size.height * 0.03,
+                                                ),
+                                                Text(
+                                                  'Faltan',
+                                                  style: textStyles.small,
+                                                  textAlign: TextAlign.center,
+                                                ),
+                                                Text(
+                                                  DateTimeUtility
+                                                      .timeUntilReservation(
+                                                          reserva.fechaReserva,
+                                                          reserva.horaInicio),
+                                                  style: textStyles.small,
+                                                  textAlign: TextAlign.center,
+                                                ),
+                                              ],
+                                            ),
+                                          )),
+                                      const Spacer(),
+                                      Text(
+                                        '${weekDayNames[reserva.fechaReserva.weekday - 1]} ${reserva.fechaReserva.day} de ${monthNames[reserva.fechaReserva.month - 1]}',
+                                        style: textStyles.small
+                                            .copyWith(color: Colors.white54),
+                                      ),
+                                    ],
+                                  ),
                                 ),
-                              ),
-                            )
-                          ],
+                              )
+                            ],
+                          ),
                         ),
                       ),
                     ),

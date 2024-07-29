@@ -46,4 +46,16 @@ class ReservaModel {
       userId: '',
     );
   }
+  factory ReservaModel.updateFromModel(ReservaModel reserva) {
+    return ReservaModel(
+      id: reserva.id,
+      diaSemana: reserva.diaSemana,
+      horaInicio: reserva.horaInicio,
+      horaFin: reserva.horaFin,
+      fechaReserva: reserva.fechaReserva,
+      pagada: reserva.pagada,
+      coste: reserva.coste,
+      userId: reserva.userId,
+    );
+  }
 }

@@ -11,20 +11,23 @@ import 'package:socket_io_client/socket_io_client.dart' as io;
 UserProvider _userProvider = UserProvider();
 
 enum ReservasEvent {
-  reservasOfAny,
-  newReservaOfAny,
-  reservasOfUser,
-  newReservaOfUser
+  reservasHorario,
+  newReservaHorario,
+  reservasProximas,
+  newReservaProxima,
+  specificReserva,
   // Otros eventos que puedas tener
 }
 
 //mixin, porque se separo la logica de socket y rest en 2 archivos
 //para conformar 1 provider, llamado "ReservaProvider"
 mixin SocketReservaProvider on ChangeNotifier {
-  List<ReservaModel> reservas = [];
-  List<ReservaModel> reservasOfUser = [];
-  bool loadingReservas = false;
-  bool loadingReservasOfUser = false;
+  //Esta reserva es la se estan viendo en el algun detalle
+  ReservaModel? reservaOnDetail;
+  List<ReservaModel> reservasHorario = [];
+  List<ReservaModel> reservasProximas = [];
+  bool loadingReservasHorario = false;
+  bool loadingReservasProximas = false;
   // bool connectionTimeOut = false;
   io.Socket? _socket;
   io.Socket? get socket => _socket;
@@ -32,8 +35,8 @@ mixin SocketReservaProvider on ChangeNotifier {
   //Gestiona el connection-timeout de los eventos
   final Map<ReservasEvent, Timer?> _timers = {};
   final Map<ReservasEvent, bool> connectionTimeouts = {
-    ReservasEvent.reservasOfAny: false,
-    ReservasEvent.reservasOfUser: false,
+    ReservasEvent.reservasHorario: false,
+    ReservasEvent.reservasProximas: false,
   };
 
   void initSocket() {
@@ -79,52 +82,55 @@ mixin SocketReservaProvider on ChangeNotifier {
     _socket?.connect();
   }
 
-  void _registerListeners(List<ReservasEvent> events) {
+  void _registerListeners(List<ReservasEvent> events,
+      {List<String>? reservaIds}) {
     if (_socket == null) return;
     for (var event in events) {
       switch (event) {
-        case ReservasEvent.reservasOfAny:
-          _handleReservasOfAny();
+        case ReservasEvent.reservasHorario:
+          _handleReservasHorario();
           break;
 
-        case ReservasEvent.newReservaOfAny:
-          _socket!.on('newReservaOfAny', (data) {
-            print('!1 reserva recibida ANY  ');
+        case ReservasEvent.newReservaHorario:
+          _socket!.on('newReservaHorario', (data) {
             ReservaModel nuevaReserva = ReservaModel.fromApi(data);
             final ReservaModel sentinel = ReservaModel.returnSentinel();
-            final ReservaModel prevReserva = reservas.firstWhere(
+            final ReservaModel prevReserva = reservasHorario.firstWhere(
               (r) => r.id == nuevaReserva.id,
               orElse: () => sentinel,
             );
 
             if (prevReserva != sentinel) return;
-            reservas.add(nuevaReserva);
-            reservas = ReservaHelper.ordenarReservas(reservas);
+            reservasHorario.add(nuevaReserva);
+            reservasHorario = ReservaHelper.ordenarReservas(reservasHorario);
             WidgetsBinding.instance
                 .addPostFrameCallback((_) => notifyListeners());
           });
           break;
-        case ReservasEvent.reservasOfUser:
-          _handleReservasOfUser();
+        case ReservasEvent.reservasProximas:
+          _handleReservasProximas();
           break;
 
-        case ReservasEvent.newReservaOfUser:
-          _socket!.on('newReservaOfUser', (data) {
-            print('!1 reserva recibida USER');
+        case ReservasEvent.newReservaProxima:
+          _socket!.on('newReservaProxima', (data) {
             ReservaModel nuevaReserva = ReservaModel.fromApi(data);
             final ReservaModel sentinel = ReservaModel.returnSentinel();
-            final ReservaModel prevReserva = reservasOfUser.firstWhere(
+            final ReservaModel prevReserva = reservasProximas.firstWhere(
               (r) => r.id == nuevaReserva.id,
               orElse: () => sentinel,
             );
 
             if (prevReserva != sentinel) return;
-            reservasOfUser.add(nuevaReserva);
-            reservasOfUser = ReservaHelper.ordenarReservas(reservasOfUser);
+            reservasProximas.add(nuevaReserva);
+            reservasProximas = ReservaHelper.ordenarReservas(reservasProximas);
             WidgetsBinding.instance
                 .addPostFrameCallback((_) => notifyListeners());
           });
           break;
+        case ReservasEvent.specificReserva:
+          if (reservaIds == null) return;
+
+          _handleSpecificReservas(reservaIds);
         default:
           print('Evento no manejado: $event');
       }
@@ -133,110 +139,145 @@ mixin SocketReservaProvider on ChangeNotifier {
 
   void _clearAllListeners() {
     if (_socket != null) {
-      _socket?.off('loadReservasOfAny');
-      _socket?.off('loadReservasOfUser');
-      _socket?.off('newReservaOfAny');
-      _socket?.off('newReservaOfUser');
+      _socket?.off('loadReservasHorario');
+      _socket?.off('loadReservasProximas');
+      _socket?.off('newReservaHorario');
+      _socket?.off('newReservaProxima');
     }
   }
 
-  void _clearListeners(events) {
+  void _clearListeners(events, {List<String>? reservaIds}) {
     if (_socket == null) return;
     for (var event in events) {
       switch (event) {
-        case ReservasEvent.reservasOfAny:
-          _socket?.off('loadReservasOfAny');
+        case ReservasEvent.reservasHorario:
+          _socket?.off('loadReservasHorario');
           break;
-        case ReservasEvent.reservasOfUser:
-          _socket?.off('loadReservasOfUser');
+        case ReservasEvent.reservasProximas:
+          _socket?.off('loadReservasProximas');
           break;
-        case ReservasEvent.newReservaOfAny:
-          _socket?.off('newReservaOfAny');
+        case ReservasEvent.newReservaHorario:
+          _socket?.off('newReservaHorario');
           break;
-        case ReservasEvent.newReservaOfUser:
-          _socket?.off('newReservaOfUser');
+        case ReservasEvent.newReservaProxima:
+          _socket?.off('newReservaProxima');
+          break;
+        case ReservasEvent.specificReserva:
+          if (reservaIds == null) return;
+          for (var id in reservaIds) {
+            _socket?.off('reserva-$id');
+          }
           break;
       }
     }
   }
 
   // Conexión manual al servidor socket, pero en /reservas
-  void connect(List<ReservasEvent> events) {
-    _clearListeners(events);
-    _registerListeners(events);
+  void connect(List<ReservasEvent> events, {List<String>? reservaIds}) {
+    _clearListeners(events, reservaIds: reservaIds);
+    _registerListeners(events, reservaIds: reservaIds);
   }
 
   // Desconexión manual al servidor socket, pero en /reservas
-  void disconnect(List<ReservasEvent> events) {
-    _clearListeners(events);
+  void disconnect(List<ReservasEvent> events, {List<String>? reservaIds}) {
+    _clearListeners(events, reservaIds: reservaIds);
   }
 
   void _disposeSocket() {
     _clearAllListeners();
     _socket?.disconnect();
     _socket = null;
-    reservasOfUser.clear();
-    reservas.clear();
+    reservasProximas.clear();
+    reservasHorario.clear();
   }
 
-  void _handleReservasOfUser() {
-    loadingReservasOfUser = true;
+  void _handleReservasProximas() {
+    loadingReservasProximas = true;
     WidgetsBinding.instance.addPostFrameCallback((_) => notifyListeners());
-    _socket!.emit('reservasOfUser', {
+    _socket!.emit('reservasProximas', {
       'userId': _userProvider.user?.id ?? 'no id',
       'today': WeekCalculator.formatDate(DateTime.now()),
     });
     //Timer de connection-timeout
-    _timers[ReservasEvent.reservasOfUser] =
+    _timers[ReservasEvent.reservasProximas] =
         Timer(const Duration(seconds: 10), () {
-      if (loadingReservasOfUser) {
-        loadingReservasOfUser = false;
-        connectionTimeouts[ReservasEvent.reservasOfUser] = true;
+      if (loadingReservasProximas) {
+        loadingReservasProximas = false;
+        connectionTimeouts[ReservasEvent.reservasProximas] = true;
         WidgetsBinding.instance.addPostFrameCallback((_) => notifyListeners());
         print('Error: El servidor no respondió a tiempo');
       }
     });
 
-    _socket!.on('loadReservasOfUser', (data) {
-      _timers[ReservasEvent.reservasOfUser]
+    _socket!.on('loadReservasProximas', (data) {
+      _timers[ReservasEvent.reservasProximas]
           ?.cancel(); //Cancelar Timer de connection-timeout
       List<Map<String, dynamic>> reservasData =
           List<Map<String, dynamic>>.from(data);
-      reservasOfUser.clear();
-      reservasOfUser =
+      reservasProximas.clear();
+      reservasProximas =
           reservasData.map((r) => ReservaModel.fromApi(r)).toList();
-      loadingReservasOfUser = false;
-      connectionTimeouts[ReservasEvent.reservasOfUser] = false;
+      loadingReservasProximas = false;
+      connectionTimeouts[ReservasEvent.reservasProximas] = false;
       WidgetsBinding.instance.addPostFrameCallback((_) => notifyListeners());
     });
   }
 
-  void _handleReservasOfAny() {
-    loadingReservas = true;
+  void _handleReservasHorario() {
+    loadingReservasHorario = true;
     WidgetsBinding.instance.addPostFrameCallback((_) => notifyListeners());
-    _socket!.emit('reservasOfAny', {
+    _socket!.emit('reservasHorario', {
       'inicio': WeekCalculator.getWeekDates().inicio,
       'fin': WeekCalculator.getWeekDates().fin,
     });
     //Timer de connection-timeout
-    _timers[ReservasEvent.reservasOfAny] =
+    _timers[ReservasEvent.reservasHorario] =
         Timer(const Duration(seconds: 10), () {
-      if (loadingReservas) {
-        loadingReservas = false;
-        connectionTimeouts[ReservasEvent.reservasOfAny] = true;
+      if (loadingReservasHorario) {
+        loadingReservasHorario = false;
+        connectionTimeouts[ReservasEvent.reservasHorario] = true;
         WidgetsBinding.instance.addPostFrameCallback((_) => notifyListeners());
         print('Error: El servidor no respondió a tiempo');
       }
     });
-    _socket!.on('loadReservasOfAny', (data) {
-      _timers[ReservasEvent.reservasOfAny]
+    _socket!.on('loadReservasHorario', (data) {
+      _timers[ReservasEvent.reservasHorario]
           ?.cancel(); //Cancelar Timer de connection-timeout
       List<Map<String, dynamic>> reservasData =
           List<Map<String, dynamic>>.from(data);
-      reservas = reservasData.map((r) => ReservaModel.fromApi(r)).toList();
-      loadingReservas = false;
-      connectionTimeouts[ReservasEvent.reservasOfAny] = false;
+      reservasHorario =
+          reservasData.map((r) => ReservaModel.fromApi(r)).toList();
+      loadingReservasHorario = false;
+      connectionTimeouts[ReservasEvent.reservasHorario] = false;
       WidgetsBinding.instance.addPostFrameCallback((_) => notifyListeners());
     });
+  }
+
+  void _handleSpecificReservas(List<String> reservaIds) {
+    for (var id in reservaIds) {
+      _socket!.on('reserva-$id', (data) {
+        print('Reserva específica recibida: $id');
+        // Procesa la data según sea necesario
+        ReservaModel updatedReserva = ReservaModel.fromApi(data);
+        // Actualizar en reservasHorario
+        int index = reservasHorario.indexWhere((reserva) => reserva.id == id);
+        if (index != -1) {
+          reservasHorario[index] = ReservaModel.updateFromModel(updatedReserva);
+        }
+
+        // Actualizar en reservasProximas
+        index = reservasProximas.indexWhere((reserva) => reserva.id == id);
+        if (index != -1) {
+          reservasProximas[index] =
+              ReservaModel.updateFromModel(updatedReserva);
+        }
+        if (reservaOnDetail != null) {
+          reservaOnDetail = updatedReserva;
+        }
+
+        // Notificar a los listeners sobre los cambios
+        WidgetsBinding.instance.addPostFrameCallback((_) => notifyListeners());
+      });
+    }
   }
 }
