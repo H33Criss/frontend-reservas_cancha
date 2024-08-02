@@ -58,7 +58,7 @@ class _ProximasReservasWidgetState extends State<ProximasReservasWidget> {
     final reservaProvider = context.watch<ReservaProvider>();
     return SizedBox(
       width: double.infinity,
-      height: size.height * 0.28,
+      height: size.height * 0.29,
       child: Skeleton(
         isLoading: reservaProvider.loadingReservasProximas,
         skeleton: ListView(
@@ -97,13 +97,13 @@ class _ProximasReservasWidgetState extends State<ProximasReservasWidget> {
                     child: InkResponse(
                       borderRadius: BorderRadius.circular(30),
                       radius: 50,
-                      onTap: () => context.push('/reserva/${reserva.id}'),
+                      onTap: () => context.push('/reservas/${reserva.id}'),
                       child: Container(
                         decoration: BoxDecoration(
-                          color: colors.border,
+                          color: colors.primaryForeground,
                           borderRadius: BorderRadius.circular(30),
                         ),
-                        width: size.width * 0.45,
+                        width: size.width * 0.48,
                         height: double.infinity,
                         margin: const EdgeInsets.symmetric(horizontal: 5),
                         child: ClipRRect(
@@ -207,7 +207,8 @@ class _ProximasReservasWidgetState extends State<ProximasReservasWidget> {
                                       Text(
                                         '${weekDayNames[reserva.fechaReserva.weekday - 1]} ${reserva.fechaReserva.day} de ${monthNames[reserva.fechaReserva.month - 1]}',
                                         style: textStyles.small
-                                            .copyWith(color: Colors.white54),
+                                            .copyWith(color: colors.primary),
+                                        textAlign: TextAlign.center,
                                       ),
                                     ],
                                   ),
@@ -229,6 +230,7 @@ class _ProximasReservasWidgetState extends State<ProximasReservasWidget> {
 class _BackgroundCircles {
   static List<Widget> _buildCircles(BuildContext context) {
     Size size = MediaQuery.of(context).size;
+    final colors = ShadTheme.of(context).colorScheme;
     return [
       Positioned(
         top: 0,
@@ -238,7 +240,7 @@ class _BackgroundCircles {
           height: size.height * 0.18,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: Colors.white.withOpacity(.06),
+            color: colors.primary.withOpacity(.06),
           ),
         ),
       ),
@@ -250,7 +252,7 @@ class _BackgroundCircles {
           height: size.height * 0.02,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: Colors.white.withOpacity(.06),
+            color: colors.primary.withOpacity(.06),
           ),
         ),
       ),
@@ -262,7 +264,7 @@ class _BackgroundCircles {
           height: size.height * 0.06,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: Colors.white.withOpacity(.06),
+            color: colors.primary.withOpacity(.06),
           ),
         ),
       ),

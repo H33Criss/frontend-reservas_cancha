@@ -53,12 +53,12 @@ class ReservaProvider
 
   void clearReservaOnDetail() {
     reservaOnDetail = null;
-    notifyListeners();
+    WidgetsBinding.instance.addPostFrameCallback((_) => notifyListeners());
   }
 
   Future<void> getReservaFromApi(String id) async {
     loadingPagoReserva = true;
-    notifyListeners();
+    WidgetsBinding.instance.addPostFrameCallback((_) => notifyListeners());
 
     try {
       final reservaFromApi = await getReservaById(id);
@@ -67,7 +67,7 @@ class ReservaProvider
       print('Error al cargar el pago de la reserva $id');
     } finally {
       loadingPagoReserva = false;
-      notifyListeners();
+      WidgetsBinding.instance.addPostFrameCallback((_) => notifyListeners());
     }
   }
 }

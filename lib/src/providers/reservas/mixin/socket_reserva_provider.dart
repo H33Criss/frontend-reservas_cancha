@@ -1,5 +1,4 @@
 import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:pobla_app/config/environment/environment.dart';
 import 'package:pobla_app/infrastructure/models/reserva.model.dart';
@@ -19,20 +18,27 @@ enum ReservasEvent {
   // Otros eventos que puedas tener
 }
 
-//mixin, porque se separo la logica de socket y rest en 2 archivos
-//para conformar 1 provider, llamado "ReservaProvider"
+class SocketEvents {
+  //Piden Data
+  static const String reservasHorario = 'reservasHorario';
+  static const String reservasProximas = 'reservasProximas';
+  //Reciben data
+  static const String loadReservasHorario = 'loadReservasHorario';
+  static const String newReservaHorario = 'newReservaHorario';
+  static const String loadReservasProximas = 'loadReservasProximas';
+  static const String newReservaProxima = 'newReservaProxima';
+  static const String specificReserva = 'reserva-'; // Se usará con un ID
+}
+
 mixin SocketReservaProvider on ChangeNotifier {
-  //Esta reserva es la se estan viendo en el algun detalle
   ReservaModel? reservaOnDetail;
   List<ReservaModel> reservasHorario = [];
   List<ReservaModel> reservasProximas = [];
   bool loadingReservasHorario = false;
   bool loadingReservasProximas = false;
-  // bool connectionTimeOut = false;
   io.Socket? _socket;
   io.Socket? get socket => _socket;
 
-  //Gestiona el connection-timeout de los eventos
   final Map<ReservasEvent, Timer?> _timers = {};
   final Map<ReservasEvent, bool> connectionTimeouts = {
     ReservasEvent.reservasHorario: false,
@@ -40,22 +46,16 @@ mixin SocketReservaProvider on ChangeNotifier {
   };
 
   void initSocket() {
-    //Para que cada vez que el usuario cambie, creo un nuevo socket, con otro token
     _userProvider.userListener.addListener(_updateSocket);
   }
 
   void _updateSocket() {
-    //Token del nuevo usuario en sesión
     final token = _userProvider.user?.jwtToken;
-
-    // Si ya había una conexión de otro usuario, desconectamos
     if (_socket != null && _socket!.connected) {
       _disposeSocket();
     }
-    // Si no hay token, no creamos una nueva conexión
     if (token == null) return;
 
-    // Conexión con el servidor, pero para el namespace reservas
     const namespace = 'reservas';
     _socket = io.io(
       '${Environment.apiSocketUrl}/$namespace',
@@ -67,18 +67,9 @@ mixin SocketReservaProvider on ChangeNotifier {
           .setExtraHeaders({'authentication': token})
           .build(),
     );
-    _socket!.onConnect((_) {
-      print('Conectado a Reservas - ${_socket?.id ?? 'NO id'}');
-    });
-
-    _socket!.onDisconnect((_) {
-      print('Desconectado de Reservas - ${_socket?.id ?? 'NO id'}');
-    });
-
-    _socket!.onReconnect((_) {
-      print('Reconectando a Reservas - ${_socket?.id ?? 'NO id'}');
-    });
-
+    _socket!.onConnect((_) {});
+    _socket!.onDisconnect((_) {});
+    _socket!.onReconnect((_) {});
     _socket?.connect();
   }
 
@@ -92,7 +83,7 @@ mixin SocketReservaProvider on ChangeNotifier {
           break;
 
         case ReservasEvent.newReservaHorario:
-          _socket!.on('newReservaHorario', (data) {
+          _socket!.on(SocketEvents.newReservaHorario, (data) {
             ReservaModel nuevaReserva = ReservaModel.fromApi(data);
             final ReservaModel sentinel = ReservaModel.returnSentinel();
             final ReservaModel prevReserva = reservasHorario.firstWhere(
@@ -107,12 +98,13 @@ mixin SocketReservaProvider on ChangeNotifier {
                 .addPostFrameCallback((_) => notifyListeners());
           });
           break;
+
         case ReservasEvent.reservasProximas:
           _handleReservasProximas();
           break;
 
         case ReservasEvent.newReservaProxima:
-          _socket!.on('newReservaProxima', (data) {
+          _socket!.on(SocketEvents.newReservaProxima, (data) {
             ReservaModel nuevaReserva = ReservaModel.fromApi(data);
             final ReservaModel sentinel = ReservaModel.returnSentinel();
             final ReservaModel prevReserva = reservasProximas.firstWhere(
@@ -127,10 +119,12 @@ mixin SocketReservaProvider on ChangeNotifier {
                 .addPostFrameCallback((_) => notifyListeners());
           });
           break;
+
         case ReservasEvent.specificReserva:
           if (reservaIds == null) return;
-
           _handleSpecificReservas(reservaIds);
+          break;
+
         default:
           print('Evento no manejado: $event');
       }
@@ -139,10 +133,10 @@ mixin SocketReservaProvider on ChangeNotifier {
 
   void _clearAllListeners() {
     if (_socket != null) {
-      _socket?.off('loadReservasHorario');
-      _socket?.off('loadReservasProximas');
-      _socket?.off('newReservaHorario');
-      _socket?.off('newReservaProxima');
+      _socket?.off(SocketEvents.loadReservasHorario);
+      _socket?.off(SocketEvents.reservasProximas);
+      _socket?.off(SocketEvents.newReservaHorario);
+      _socket?.off(SocketEvents.newReservaProxima);
     }
   }
 
@@ -151,34 +145,32 @@ mixin SocketReservaProvider on ChangeNotifier {
     for (var event in events) {
       switch (event) {
         case ReservasEvent.reservasHorario:
-          _socket?.off('loadReservasHorario');
+          _socket?.off(SocketEvents.loadReservasHorario);
           break;
         case ReservasEvent.reservasProximas:
-          _socket?.off('loadReservasProximas');
+          _socket?.off(SocketEvents.reservasProximas);
           break;
         case ReservasEvent.newReservaHorario:
-          _socket?.off('newReservaHorario');
+          _socket?.off(SocketEvents.newReservaHorario);
           break;
         case ReservasEvent.newReservaProxima:
-          _socket?.off('newReservaProxima');
+          _socket?.off(SocketEvents.newReservaProxima);
           break;
         case ReservasEvent.specificReserva:
           if (reservaIds == null) return;
           for (var id in reservaIds) {
-            _socket?.off('reserva-$id');
+            _socket?.off('${SocketEvents.specificReserva}$id');
           }
           break;
       }
     }
   }
 
-  // Conexión manual al servidor socket, pero en /reservas
   void connect(List<ReservasEvent> events, {List<String>? reservaIds}) {
     _clearListeners(events, reservaIds: reservaIds);
     _registerListeners(events, reservaIds: reservaIds);
   }
 
-  // Desconexión manual al servidor socket, pero en /reservas
   void disconnect(List<ReservasEvent> events, {List<String>? reservaIds}) {
     _clearListeners(events, reservaIds: reservaIds);
   }
@@ -194,24 +186,21 @@ mixin SocketReservaProvider on ChangeNotifier {
   void _handleReservasProximas() {
     loadingReservasProximas = true;
     WidgetsBinding.instance.addPostFrameCallback((_) => notifyListeners());
-    _socket!.emit('reservasProximas', {
+    _socket!.emit(SocketEvents.reservasProximas, {
       'userId': _userProvider.user?.id ?? 'no id',
       'today': WeekCalculator.formatDate(DateTime.now()),
     });
-    //Timer de connection-timeout
     _timers[ReservasEvent.reservasProximas] =
         Timer(const Duration(seconds: 10), () {
       if (loadingReservasProximas) {
         loadingReservasProximas = false;
         connectionTimeouts[ReservasEvent.reservasProximas] = true;
         WidgetsBinding.instance.addPostFrameCallback((_) => notifyListeners());
-        print('Error: El servidor no respondió a tiempo');
       }
     });
 
-    _socket!.on('loadReservasProximas', (data) {
-      _timers[ReservasEvent.reservasProximas]
-          ?.cancel(); //Cancelar Timer de connection-timeout
+    _socket!.on(SocketEvents.loadReservasProximas, (data) {
+      _timers[ReservasEvent.reservasProximas]?.cancel();
       List<Map<String, dynamic>> reservasData =
           List<Map<String, dynamic>>.from(data);
       reservasProximas.clear();
@@ -226,11 +215,10 @@ mixin SocketReservaProvider on ChangeNotifier {
   void _handleReservasHorario() {
     loadingReservasHorario = true;
     WidgetsBinding.instance.addPostFrameCallback((_) => notifyListeners());
-    _socket!.emit('reservasHorario', {
+    _socket!.emit(SocketEvents.reservasHorario, {
       'inicio': WeekCalculator.getWeekDates().inicio,
       'fin': WeekCalculator.getWeekDates().fin,
     });
-    //Timer de connection-timeout
     _timers[ReservasEvent.reservasHorario] =
         Timer(const Duration(seconds: 10), () {
       if (loadingReservasHorario) {
@@ -240,9 +228,8 @@ mixin SocketReservaProvider on ChangeNotifier {
         print('Error: El servidor no respondió a tiempo');
       }
     });
-    _socket!.on('loadReservasHorario', (data) {
-      _timers[ReservasEvent.reservasHorario]
-          ?.cancel(); //Cancelar Timer de connection-timeout
+    _socket!.on(SocketEvents.loadReservasHorario, (data) {
+      _timers[ReservasEvent.reservasHorario]?.cancel();
       List<Map<String, dynamic>> reservasData =
           List<Map<String, dynamic>>.from(data);
       reservasHorario =
@@ -255,17 +242,13 @@ mixin SocketReservaProvider on ChangeNotifier {
 
   void _handleSpecificReservas(List<String> reservaIds) {
     for (var id in reservaIds) {
-      _socket!.on('reserva-$id', (data) {
-        print('Reserva específica recibida: $id');
-        // Procesa la data según sea necesario
+      _socket!.on('${SocketEvents.specificReserva}$id', (data) {
         ReservaModel updatedReserva = ReservaModel.fromApi(data);
-        // Actualizar en reservasHorario
         int index = reservasHorario.indexWhere((reserva) => reserva.id == id);
         if (index != -1) {
           reservasHorario[index] = ReservaModel.updateFromModel(updatedReserva);
         }
 
-        // Actualizar en reservasProximas
         index = reservasProximas.indexWhere((reserva) => reserva.id == id);
         if (index != -1) {
           reservasProximas[index] =
@@ -275,7 +258,6 @@ mixin SocketReservaProvider on ChangeNotifier {
           reservaOnDetail = updatedReserva;
         }
 
-        // Notificar a los listeners sobre los cambios
         WidgetsBinding.instance.addPostFrameCallback((_) => notifyListeners());
       });
     }

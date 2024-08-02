@@ -11,11 +11,17 @@ final mainRouter = GoRouter(
     GoRoute(path: '/', builder: (context, state) => const HomePage()),
     GoRoute(path: '/login', builder: (context, state) => const LoginPage()),
     GoRoute(
-      path: '/reserva/:id',
-      builder: (context, state) {
-        final reservaId = state.pathParameters['id'] ?? '';
-        return ReservaById(reservaId: reservaId);
-      },
+      path: '/reservas',
+      builder: (context, state) => const ReservasListUser(),
+      routes: [
+        GoRoute(
+          path: ':id',
+          builder: (context, state) {
+            final reservaId = state.pathParameters['id'] ?? '';
+            return ReservaById(reservaId: reservaId);
+          },
+        ),
+      ],
     ),
     GoRoute(
       path: '/horario-reservas',

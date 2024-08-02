@@ -10,6 +10,7 @@ class AppTheme {
       textTheme: ShadTextTheme(
         family: 'Kanit',
       ),
+      // colorScheme: const ShadSlateColorScheme.dark(),
       colorScheme: const ShadSlateColorScheme.dark(muted: Colors.blue),
       buttonSizesTheme: ShadButtonSizesTheme(
         lg: ShadButtonSizeTheme(
@@ -40,6 +41,7 @@ class AppTheme {
         family: 'Kanit',
       ),
       brightness: Brightness.dark,
+      // colorScheme: const ShadSlateColorScheme.dark(),
       colorScheme: const ShadSlateColorScheme.dark(muted: Colors.blue),
     );
   }

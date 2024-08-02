@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:pobla_app/src/pages/home/widgets/home_view/bienvenida_widget.dart';
 import 'package:pobla_app/src/pages/home/widgets/home_view/horario_widget.dart';
@@ -34,6 +35,7 @@ class HomeView extends StatelessWidget {
                 Text('Reservas próximas', style: textStyles.h4),
                 const Spacer(),
                 ShadButton(
+                  onPressed: () => context.push('/reservas'),
                   size: ShadButtonSize.sm,
                   icon: Icon(MdiIcons.arrowCollapseAll),
                   text: const Text('Ver Reservas'),
@@ -41,7 +43,7 @@ class HomeView extends StatelessWidget {
               ],
             ),
           ),
-          SizedBox(height: size.height * 0.02),
+          SizedBox(height: size.height * 0.01),
           Padding(
             padding: EdgeInsets.only(left: size.width * 0.07),
             child: const ProximasReservasWidget(),

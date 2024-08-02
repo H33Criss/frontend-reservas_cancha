@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:animate_do/animate_do.dart';
 import 'package:animated_icon/animated_icon.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_skeleton_ui/flutter_skeleton_ui.dart';
@@ -35,6 +36,7 @@ class _ReservaByIdState extends State<ReservaById> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = ShadTheme.of(context).colorScheme;
     final reservaProvider = context.watch<ReservaProvider>();
     final textStyles = ShadTheme.of(context).textTheme;
 
@@ -56,7 +58,7 @@ class _ReservaByIdState extends State<ReservaById> {
                   animateIcon: AnimateIcons.downArrow,
                   width: 24,
                   height: 24,
-                  color: Colors.white,
+                  color: colors.primary,
                 ),
                 Text(
                   'Detalles',
@@ -107,6 +109,7 @@ class _MainContentState extends State<_MainContent> {
   @override
   void initState() {
     widget.reservaProvider.getReservaFromApi(widget.reserva.id);
+    _initConnectionSocket(false);
     super.initState();
   }
 
@@ -142,13 +145,14 @@ class _MainContentState extends State<_MainContent> {
       widget.reserva.id
     ]);
     widget.reservaProvider.clearReservaOnDetail();
+    _timer?.cancel();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
-    _initConnectionSocket(false);
+
     if (_timer == null || !_timer!.isActive) {
       _startTimer(widget.reserva.horaInicio, widget.reserva.horaFin,
           widget.reserva.fechaReserva);
@@ -206,52 +210,55 @@ class _StepWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
     final colors = ShadTheme.of(context).colorScheme;
-    final heightLine = (size.height * 0.15) + (size.height * 0.03);
+    final heightLine = (size.height * 0.15) + (size.height * 0.032);
     final totalHeightLine = ((size.height * 0.15) + (size.height * 0.03)) * (3);
-    return Stack(
-      alignment: Alignment.centerRight,
-      children: [
-        // Linea Gris
-        Positioned(
-          top: 0,
-          right: (size.width * 0.025) - (size.width * 0.015) / 2,
-          child: Container(
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(10),
-              color: Colors.grey[600],
-            ),
-            width: size.width * 0.015,
-            height: totalHeightLine + (size.height * 0.002),
-          ),
-        ),
-        // Linea de color
-        Positioned(
-          top: 1,
-          right: (size.width * 0.025) - (size.width * 0.015) / 2,
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 1500),
-            color: Colors.white,
-            width: size.width * 0.015,
-            height:
-                ((size.height * 0.15) + (size.height * 0.03)) * (currentStep),
-          ),
-        ),
-        // Circulos
-        for (int i = 0; i < 4; i++)
+    return FadeInLeft(
+      duration: const Duration(milliseconds: 200),
+      child: Stack(
+        alignment: Alignment.centerRight,
+        children: [
+          // Linea Gris
           Positioned(
-            top: heightLine * i,
-            right: 0,
+            top: 0,
+            right: (size.width * 0.025) - (size.width * 0.015) / 2,
+            child: Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(10),
+                color: Colors.grey[600],
+              ),
+              width: size.width * 0.015,
+              height: totalHeightLine + (size.height * 0.01),
+            ),
+          ),
+          // Linea de color
+          Positioned(
+            top: 1,
+            right: (size.width * 0.025) - (size.width * 0.015) / 2,
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 1500),
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: currentStep >= i ? colors.primary : Colors.grey[600],
-              ),
-              height: size.width * 0.05,
-              width: size.width * 0.05,
+              color: Colors.white,
+              width: size.width * 0.015,
+              height:
+                  ((size.height * 0.15) + (size.height * 0.03)) * (currentStep),
             ),
           ),
-      ],
+          // Circulos
+          for (int i = 0; i < 4; i++)
+            Positioned(
+              top: heightLine * i,
+              right: 0,
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 1500),
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: currentStep >= i ? colors.primary : Colors.grey[600],
+                ),
+                height: size.width * 0.05,
+                width: size.width * 0.05,
+              ),
+            ),
+        ],
+      ),
     );
   }
 }
@@ -300,92 +307,97 @@ class _ActivityStep extends StatelessWidget {
       children: List.generate(steps.length, (index) {
         return Padding(
           padding: EdgeInsets.only(bottom: index == 3 ? 0 : size.height * 0.03),
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 1500),
-            padding: const EdgeInsets.only(left: 0, right: 20),
-            width: double.infinity,
-            height: size.height * 0.15,
-            decoration: currentStep != index
-                ? null
-                : BoxDecoration(
-                    borderRadius: BorderRadius.circular(15),
-                    color: colors.primary,
-                  ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    SizedBox(
-                      width: size.width * 0.1,
-                      child: Center(
-                        child: currentStep > index
-                            ? Container(
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(5),
-                                  gradient: LinearGradient(
-                                    begin: Alignment.bottomLeft,
-                                    end: Alignment.topCenter,
-                                    colors: [
-                                      colors.muted,
-                                      colors.muted.withGreen(200)
-                                    ],
+          child: FadeInRight(
+            duration: const Duration(milliseconds: 200),
+            delay: Duration(milliseconds: 500 * index),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 1500),
+              padding: const EdgeInsets.only(left: 0, right: 20),
+              width: double.infinity,
+              height: size.height * 0.15,
+              decoration: currentStep != index
+                  ? null
+                  : BoxDecoration(
+                      borderRadius: BorderRadius.circular(15),
+                      color: colors.primary,
+                    ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      SizedBox(
+                        width: size.width * 0.1,
+                        child: Center(
+                          child: currentStep > index
+                              ? Container(
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(5),
+                                    gradient: LinearGradient(
+                                      begin: Alignment.bottomLeft,
+                                      end: Alignment.topCenter,
+                                      colors: [
+                                        colors.muted,
+                                        colors.muted.withGreen(200)
+                                      ],
+                                    ),
                                   ),
-                                ),
-                                width: size.width * 0.05,
-                                height: size.width * 0.05,
-                                child: AnimateIcon(
-                                  onTap: () {},
-                                  iconType: IconType.continueAnimation,
-                                  height: 20,
-                                  width: 20,
-                                  color: colors.primary,
-                                  animateIcon: AnimateIcons.checkmarkOk,
-                                ),
-                              )
-                            : currentStep == index
-                                ? AnimateIcon(
+                                  width: size.width * 0.05,
+                                  height: size.width * 0.05,
+                                  child: AnimateIcon(
                                     onTap: () {},
                                     iconType: IconType.continueAnimation,
-                                    height: 26,
-                                    width: 26,
-                                    color: colors.muted,
-                                    animateIcon: AnimateIcons.submitProgress,
-                                  )
-                                : Icon(
-                                    Icons.check_box_outline_blank_outlined,
-                                    color: currentStep >= index
-                                        ? colors.muted
-                                        : colors.muted.withOpacity(.5),
+                                    height: 20,
+                                    width: 20,
+                                    color: colors.primary,
+                                    animateIcon: AnimateIcons.checkmarkOk,
                                   ),
+                                )
+                              : currentStep == index
+                                  ? AnimateIcon(
+                                      onTap: () {},
+                                      iconType: IconType.continueAnimation,
+                                      height: 26,
+                                      width: 26,
+                                      color: colors.muted,
+                                      animateIcon: AnimateIcons.submitProgress,
+                                    )
+                                  : Icon(
+                                      Icons.check_box_outline_blank_outlined,
+                                      color: currentStep >= index
+                                          ? colors.muted
+                                          : colors.muted.withOpacity(.5),
+                                    ),
+                        ),
                       ),
-                    ),
-                    Text(
-                      steps[index]['time']!,
+                      Text(
+                        steps[index]['time']!,
+                        style: currentStep != index
+                            ? currentStep > index
+                                ? textStyles.large
+                                : textStyles.large.copyWith(
+                                    color: Colors.grey[600],
+                                  )
+                            : textStyles.large
+                                .copyWith(color: colors.secondary),
+                      ),
+                    ],
+                  ),
+                  Padding(
+                    padding: EdgeInsets.only(left: size.width * 0.1),
+                    child: Text(
+                      steps[index]['text']!,
                       style: currentStep != index
                           ? currentStep > index
-                              ? textStyles.large
-                              : textStyles.large.copyWith(
+                              ? textStyles.p
+                              : textStyles.p.copyWith(
                                   color: Colors.grey[600],
                                 )
-                          : textStyles.large.copyWith(color: colors.secondary),
+                          : textStyles.p.copyWith(color: colors.secondary),
                     ),
-                  ],
-                ),
-                Padding(
-                  padding: EdgeInsets.only(left: size.width * 0.1),
-                  child: Text(
-                    steps[index]['text']!,
-                    style: currentStep != index
-                        ? currentStep > index
-                            ? textStyles.p
-                            : textStyles.p.copyWith(
-                                color: Colors.grey[600],
-                              )
-                        : textStyles.p.copyWith(color: colors.secondary),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         );
@@ -415,35 +427,38 @@ class _PagoReserva extends StatelessWidget {
           ),
         ),
       ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 15),
-        child: pagada
-            ? ShadCard(
-                radius: BorderRadius.circular(15),
-                trailing: AnimateIcon(
-                  iconType: IconType.continueAnimation,
-                  onTap: () {},
-                  color: Colors.green[700]!,
-                  animateIcon: AnimateIcons.dollar,
+      child: ZoomIn(
+        duration: const Duration(milliseconds: 200),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 15),
+          child: pagada
+              ? ShadCard(
+                  radius: BorderRadius.circular(15),
+                  trailing: AnimateIcon(
+                    iconType: IconType.continueAnimation,
+                    onTap: () {},
+                    color: Colors.green[700]!,
+                    animateIcon: AnimateIcons.dollar,
+                  ),
+                  width: double.infinity,
+                  title: Text('¡Pago confirmado! 🏐', style: textStyles.h4),
+                  description: const Text(
+                      'El administrador ha confirmado que has pagado por esta hora.'),
+                )
+              : ShadCard(
+                  radius: BorderRadius.circular(15),
+                  trailing: AnimateIcon(
+                    iconType: IconType.continueAnimation,
+                    onTap: () {},
+                    color: colors.muted,
+                    animateIcon: AnimateIcons.loading3,
+                  ),
+                  width: double.infinity,
+                  title: Text('Esperando Pago 💳', style: textStyles.h4),
+                  description: const Text(
+                      'En espera de confirmación de pago, por parte del administrador de la cancha.'),
                 ),
-                width: double.infinity,
-                title: Text('¡Pago confirmado! 🏐', style: textStyles.h4),
-                description: const Text(
-                    'El administrador ha confirmado que has pagado por esta hora.'),
-              )
-            : ShadCard(
-                radius: BorderRadius.circular(15),
-                trailing: AnimateIcon(
-                  iconType: IconType.continueAnimation,
-                  onTap: () {},
-                  color: colors.muted,
-                  animateIcon: AnimateIcons.loading3,
-                ),
-                width: double.infinity,
-                title: Text('Esperando Pago 💳', style: textStyles.h4),
-                description: const Text(
-                    'En espera de confirmación de pago, por parte del administrador de la cancha.'),
-              ),
+        ),
       ),
     );
   }
