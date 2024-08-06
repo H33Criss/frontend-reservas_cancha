@@ -8,7 +8,8 @@ import 'package:pobla_app/infrastructure/models/reserva.model.dart';
 import 'package:pobla_app/src/helpers/reservas/reserva_step_helper.dart';
 import 'package:pobla_app/src/helpers/reservas/reserva_time_helper.dart';
 import 'package:pobla_app/src/providers/providers.dart';
-import 'package:pobla_app/src/providers/reservas/mixin/socket_reserva_provider.dart';
+import 'package:pobla_app/src/providers/reservas/mixin/socket/socket_reserva_provider.dart';
+import 'package:pobla_app/src/shared/widgets/minute_update.dart';
 import 'package:provider/provider.dart';
 import 'package:shadcn_ui/shadcn_ui.dart';
 
@@ -103,7 +104,6 @@ class _MainContent extends StatefulWidget {
 }
 
 class _MainContentState extends State<_MainContent> {
-  Timer? _timer;
   int _currentStep = 0;
 
   @override
@@ -111,15 +111,6 @@ class _MainContentState extends State<_MainContent> {
     widget.reservaProvider.getReservaFromApi(widget.reserva.id);
     _initConnectionSocket(false);
     super.initState();
-  }
-
-  void _startTimer(String horaInicio, String horaFin, DateTime fechaReserva) {
-    _timer = Timer.periodic(const Duration(seconds: 30), (timer) {
-      setState(() {
-        _currentStep =
-            StepHelper.calculateCurrentStep(horaInicio, horaFin, fechaReserva);
-      });
-    });
   }
 
   void _initConnectionSocket(bool renew) {
@@ -145,7 +136,6 @@ class _MainContentState extends State<_MainContent> {
       widget.reserva.id
     ]);
     widget.reservaProvider.clearReservaOnDetail();
-    _timer?.cancel();
     super.dispose();
   }
 
@@ -153,58 +143,56 @@ class _MainContentState extends State<_MainContent> {
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
 
-    if (_timer == null || !_timer!.isActive) {
-      _startTimer(widget.reserva.horaInicio, widget.reserva.horaFin,
-          widget.reserva.fechaReserva);
-    }
-
-    _currentStep = StepHelper.calculateCurrentStep(widget.reserva.horaInicio,
-        widget.reserva.horaFin, widget.reserva.fechaReserva);
-    return SizedBox(
-      width: size.width,
-      height: widget.perfectH,
-      child: Column(
-        children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                padding: EdgeInsets.symmetric(vertical: widget.perfectH * 0.02),
-                width: size.width * 0.15,
-                height: widget.perfectH * 0.76,
-                child: _StepWidget(
-                  currentStep: _currentStep,
-                  heightAvailable:
-                      (widget.perfectH * 0.9) - (widget.perfectH * 0.04),
+    return MinuteUpdater(builder: (context) {
+      _currentStep = StepHelper.calculateCurrentStep(widget.reserva.horaInicio,
+          widget.reserva.horaFin, widget.reserva.fechaReserva);
+      return SizedBox(
+        width: size.width,
+        height: widget.perfectH,
+        child: Column(
+          children: [
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  padding:
+                      EdgeInsets.symmetric(vertical: widget.perfectH * 0.02),
+                  width: size.width * 0.15,
+                  height: widget.perfectH * 0.76,
+                  child: _LeftStepLine(
+                    currentStep: _currentStep,
+                    heightAvailable:
+                        (widget.perfectH * 0.9) - (widget.perfectH * 0.04),
+                  ),
                 ),
-              ),
-              SizedBox(width: size.width * 0.05),
-              Container(
-                padding: EdgeInsets.symmetric(vertical: widget.perfectH * 0.02),
-                width: size.width * 0.8,
-                height: widget.perfectH * 0.76,
-                child: _ActivityStep(
-                  costo: widget.reserva.coste,
-                  horaInicio: widget.reserva.horaInicio,
-                  horaFin: widget.reserva.horaFin,
-                  currentStep: _currentStep,
+                SizedBox(width: size.width * 0.05),
+                Container(
+                  padding:
+                      EdgeInsets.symmetric(vertical: widget.perfectH * 0.02),
+                  width: size.width * 0.8,
+                  height: widget.perfectH * 0.76,
+                  child: _RightStepCards(
+                    reserva: widget.reserva,
+                    currentStep: _currentStep,
+                  ),
                 ),
-              ),
-            ],
-          ),
-          Expanded(
-            child: _PagoReserva(pagada: widget.reserva.pagada),
-          ),
-        ],
-      ),
-    );
+              ],
+            ),
+            Expanded(
+              child: _PagoReserva(pagada: widget.reserva.pagada),
+            ),
+          ],
+        ),
+      );
+    });
   }
 }
 
-class _StepWidget extends StatelessWidget {
+class _LeftStepLine extends StatelessWidget {
   final double heightAvailable;
   final int currentStep;
-  const _StepWidget({required this.heightAvailable, required this.currentStep});
+  const _LeftStepLine(
+      {required this.heightAvailable, required this.currentStep});
 
   @override
   Widget build(BuildContext context) {
@@ -238,8 +226,7 @@ class _StepWidget extends StatelessWidget {
               duration: const Duration(milliseconds: 1500),
               color: Colors.white,
               width: size.width * 0.015,
-              height:
-                  ((size.height * 0.15) + (size.height * 0.03)) * (currentStep),
+              height: (heightLine) * (currentStep),
             ),
           ),
           // Circulos
@@ -263,16 +250,12 @@ class _StepWidget extends StatelessWidget {
   }
 }
 
-class _ActivityStep extends StatelessWidget {
+class _RightStepCards extends StatelessWidget {
+  final ReservaModel reserva;
   final int currentStep;
-  final String horaInicio;
-  final String horaFin;
-  final int costo;
-  const _ActivityStep({
+  const _RightStepCards({
     required this.currentStep,
-    required this.horaInicio,
-    required this.horaFin,
-    required this.costo,
+    required this.reserva,
   });
 
   @override
@@ -283,22 +266,23 @@ class _ActivityStep extends StatelessWidget {
 
     List<Map<String, String>> steps = [
       {
-        'time': '${ReservaTimeHelper.subtractFiveMinutes(horaInicio)} PM',
+        'time':
+            '${ReservaTimeHelper.subtractFiveMinutes(reserva.horaInicio)} PM',
         'text':
-            '5 minutos antes, debes ir a pagar los \$$costo y obtener las llaves de la cancha.'
+            '5 minutos antes, debes ir a pagar los \$${reserva.coste} y obtener las llaves de la cancha.'
       },
       {
-        'time': '$horaInicio PM',
+        'time': '${reserva.horaInicio} PM',
         'text':
             'Comienza la hora de la cancha. Tienes 1 hora de tiempo de juego.'
       },
       {
-        'time': '$horaFin PM',
+        'time': '${reserva.horaFin} PM',
         'text':
             'Termino de la hora de la cancha. Asegurate de retirar todas tus pertenencias.'
       },
       {
-        'time': '${ReservaTimeHelper.addFiveMinutes(horaFin)} PM',
+        'time': '${ReservaTimeHelper.addFiveMinutes(reserva.horaFin)} PM',
         'text': 'Dejar cerrada la entrada, si es que nadie mas esta esperando.'
       },
     ];
@@ -381,6 +365,19 @@ class _ActivityStep extends StatelessWidget {
                             : textStyles.large
                                 .copyWith(color: colors.secondary),
                       ),
+                      const Spacer(),
+                      Text(
+                        ReservaTimeHelper.timeUntil(reserva.fechaReserva,
+                            steps[index]['time']!.split(' ')[0]),
+                        style: currentStep != index
+                            ? currentStep > index
+                                ? textStyles.small
+                                : textStyles.small.copyWith(
+                                    color: Colors.grey[600],
+                                  )
+                            : textStyles.small
+                                .copyWith(color: colors.secondary),
+                      )
                     ],
                   ),
                   Padding(

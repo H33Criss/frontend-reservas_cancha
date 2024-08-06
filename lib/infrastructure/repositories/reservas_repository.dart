@@ -26,6 +26,13 @@ class ReservasRepository {
   Future<void> addReserva(Map<String, dynamic> reservaData) async {
     try {
       await dio.post('/reservas', data: reservaData);
+      // await dio.post('/reservas', data: {
+      //   'diaSemana': 'Domingo',
+      //   'horaInicio': '15:00',
+      //   'horaFin': '16:00',
+      //   'fechaReserva': '2024-08-04',
+      //   'coste': 10000
+      // });
     } on DioException catch (error) {
       print(error.message);
       print(error.response?.data);

@@ -4,6 +4,8 @@ import 'package:material_design_icons_flutter/material_design_icons_flutter.dart
 import 'package:pobla_app/src/pages/home/widgets/home_view/bienvenida_widget.dart';
 import 'package:pobla_app/src/pages/home/widgets/home_view/horario_widget.dart';
 import 'package:pobla_app/src/pages/home/widgets/home_view/proximas_reservas_widget.dart';
+import 'package:pobla_app/src/providers/providers.dart';
+import 'package:provider/provider.dart';
 import 'package:shadcn_ui/shadcn_ui.dart';
 
 class HomeView extends StatelessWidget {
@@ -13,6 +15,7 @@ class HomeView extends StatelessWidget {
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
     final textStyles = ShadTheme.of(context).textTheme;
+    final reservaProvider = context.watch<ReservaProvider>();
     return SingleChildScrollView(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -45,9 +48,13 @@ class HomeView extends StatelessWidget {
           ),
           SizedBox(height: size.height * 0.01),
           Padding(
-            padding: EdgeInsets.only(left: size.width * 0.07),
+            padding: EdgeInsets.only(
+              left: reservaProvider.reservasProximas.isEmpty
+                  ? 0
+                  : size.width * 0.045,
+            ),
             child: const ProximasReservasWidget(),
-          )
+          ),
         ],
       ),
     );

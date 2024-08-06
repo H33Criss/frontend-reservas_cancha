@@ -5,7 +5,7 @@ import 'package:pobla_app/src/data/hours_definitions.dart';
 import 'package:pobla_app/src/pages/reservas/widgets/card_reserva.dart';
 import 'package:pobla_app/src/pages/reservas/widgets/card_reserva_skeleton.dart';
 import 'package:pobla_app/src/providers/providers.dart';
-import 'package:pobla_app/src/providers/reservas/mixin/socket_reserva_provider.dart';
+import 'package:pobla_app/src/providers/reservas/mixin/socket/socket_reserva_provider.dart';
 import 'package:pobla_app/src/shared/widgets/connection_timeout.dart';
 import 'package:pobla_app/src/utils/week_calculator.dart';
 import 'package:provider/provider.dart';

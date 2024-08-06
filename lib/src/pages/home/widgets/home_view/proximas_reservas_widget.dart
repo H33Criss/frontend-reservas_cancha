@@ -3,11 +3,14 @@ import 'package:animated_icon/animated_icon.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_skeleton_ui/flutter_skeleton_ui.dart';
 import 'package:go_router/go_router.dart';
+import 'package:pobla_app/infrastructure/models/reserva.model.dart';
 import 'package:pobla_app/src/data/hours_definitions.dart';
+import 'package:pobla_app/src/helpers/reservas/reserva_time_helper.dart';
 import 'package:pobla_app/src/providers/providers.dart';
-import 'package:pobla_app/src/providers/reservas/mixin/socket_reserva_provider.dart';
+import 'package:pobla_app/src/providers/reservas/mixin/socket/socket_reserva_provider.dart';
+import 'package:pobla_app/src/shared/shared.dart';
 import 'package:pobla_app/src/shared/widgets/connection_timeout.dart';
-import 'package:pobla_app/src/utils/datetime_utility.dart';
+import 'package:pobla_app/src/shared/widgets/minute_update.dart';
 import 'package:provider/provider.dart';
 import 'package:shadcn_ui/shadcn_ui.dart';
 import 'package:simple_ripple_animation/simple_ripple_animation.dart';
@@ -81,147 +84,212 @@ class _ProximasReservasWidgetState extends State<ProximasReservasWidget> {
             ),
           ],
         ),
-        child: reservaProvider
-                .connectionTimeouts[ReservasEvent.reservasProximas]!
-            ? ConnectionTimeoutWidget(
-                tryAgainFunction: _initSocketConnection,
-                topSeparation: size.height * 0.05,
-              )
-            : ListView.builder(
-                physics: const BouncingScrollPhysics(),
-                scrollDirection: Axis.horizontal,
-                itemCount: reservaProvider.reservasProximas.length,
-                itemBuilder: (context, i) {
-                  final reserva = reservaProvider.reservasProximas[i];
-                  return ZoomIn(
-                    child: InkResponse(
-                      borderRadius: BorderRadius.circular(30),
-                      radius: 50,
-                      onTap: () => context.push('/reservas/${reserva.id}'),
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: colors.primaryForeground,
-                          borderRadius: BorderRadius.circular(30),
-                        ),
-                        width: size.width * 0.48,
-                        height: double.infinity,
-                        margin: const EdgeInsets.symmetric(horizontal: 5),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(30),
-                          child: Stack(
-                            children: [
-                              ..._BackgroundCircles._buildCircles(context),
-                              Positioned(
-                                left: 0,
-                                right: 0,
-                                top: 0,
-                                bottom: 0,
-                                child: Container(
-                                  padding: const EdgeInsets.all(20),
-                                  child: Column(
-                                    children: [
-                                      Row(
-                                        children: [
-                                          Container(
-                                            padding: const EdgeInsets.all(5),
-                                            decoration: BoxDecoration(
-                                              color:
-                                                  Colors.white.withOpacity(.1),
-                                              borderRadius:
-                                                  BorderRadius.circular(10),
-                                            ),
-                                            child: AnimateIcon(
-                                              key: UniqueKey(),
-                                              onTap: () {},
-                                              iconType:
-                                                  IconType.continueAnimation,
-                                              height: 20,
-                                              width: 20,
-                                              color: colors.primary,
-                                              animateIcon: AnimateIcons.bell,
-                                            ),
-                                          ),
-                                          const SizedBox(width: 5),
-                                          Text('Reserva', style: textStyles.h4),
-                                        ],
-                                      ),
-                                      SizedBox(height: size.height * 0.02),
-                                      RichText(
-                                        text: TextSpan(children: [
-                                          TextSpan(
-                                            text: reserva.horaInicio,
-                                            style: textStyles.h4,
-                                          ),
-                                          TextSpan(
-                                            text: ' - ',
-                                            style: textStyles.h4,
-                                          ),
-                                          TextSpan(
-                                            text: reserva.horaFin,
-                                            style: textStyles.h4,
-                                          ),
-                                        ]),
-                                      ),
-                                      const Spacer(),
-                                      RippleAnimation(
-                                          color: colors.muted.withOpacity(.5),
-                                          delay:
-                                              const Duration(milliseconds: 300),
-                                          repeat: true,
-                                          minRadius: 30,
-                                          ripplesCount: 1,
-                                          duration: const Duration(
-                                              milliseconds: 6 * 300),
-                                          child: Container(
-                                            decoration: BoxDecoration(
-                                              shape: BoxShape.circle,
-                                              color:
-                                                  colors.muted.withOpacity(.5),
-                                            ),
-                                            width: size.height * 0.1,
-                                            height: size.height * 0.1,
-                                            child: Column(
-                                              // mainAxisAlignment:
-                                              //     MainAxisAlignment.center,
-                                              children: [
-                                                SizedBox(
-                                                  height: size.height * 0.03,
-                                                ),
-                                                Text(
-                                                  'Faltan',
-                                                  style: textStyles.small,
-                                                  textAlign: TextAlign.center,
-                                                ),
-                                                Text(
-                                                  DateTimeUtility
-                                                      .timeUntilReservation(
-                                                          reserva.fechaReserva,
-                                                          reserva.horaInicio),
-                                                  style: textStyles.small,
-                                                  textAlign: TextAlign.center,
-                                                ),
-                                              ],
-                                            ),
-                                          )),
-                                      const Spacer(),
-                                      Text(
-                                        '${weekDayNames[reserva.fechaReserva.weekday - 1]} ${reserva.fechaReserva.day} de ${monthNames[reserva.fechaReserva.month - 1]}',
-                                        style: textStyles.small
-                                            .copyWith(color: colors.primary),
-                                        textAlign: TextAlign.center,
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              )
-                            ],
+        child:
+            reservaProvider.connectionTimeouts[ReservasEvent.reservasProximas]!
+                ? ConnectionTimeoutWidget(
+                    tryAgainFunction: _initSocketConnection,
+                    topSeparation: size.height * 0.05,
+                  )
+                : reservaProvider.reservasProximas.isEmpty
+                    ? Container(
+                        alignment: Alignment.centerLeft,
+                        width: size.width * 0.86,
+                        child: FadeIn(
+                          duration: const Duration(milliseconds: 1500),
+                          child: const EmptyReservas(
+                            message: 'No tienes reservas próximas',
                           ),
                         ),
+                      )
+                    : ListView.builder(
+                        physics: const BouncingScrollPhysics(),
+                        scrollDirection: Axis.horizontal,
+                        itemCount: reservaProvider.reservasProximas.length,
+                        itemBuilder: (context, i) {
+                          final reserva = reservaProvider.reservasProximas[i];
+                          return _CardProximaReserva(
+                            reserva: reserva,
+                            colors: colors,
+                            size: size,
+                            textStyles: textStyles,
+                          );
+                        },
                       ),
-                    ),
-                  );
-                },
-              ),
+      ),
+    );
+  }
+}
+
+class _CardProximaReserva extends StatelessWidget {
+  const _CardProximaReserva({
+    required this.reserva,
+    required this.colors,
+    required this.size,
+    required this.textStyles,
+  });
+
+  final ReservaModel reserva;
+  final ShadColorScheme colors;
+  final Size size;
+  final ShadTextTheme textStyles;
+
+  @override
+  Widget build(BuildContext context) {
+    return ZoomIn(
+      child: InkResponse(
+        borderRadius: BorderRadius.circular(30),
+        radius: 50,
+        onTap: () => context.push('/reservas/${reserva.id}'),
+        child: Container(
+          decoration: BoxDecoration(
+            color: colors.primaryForeground,
+            borderRadius: BorderRadius.circular(30),
+          ),
+          width: size.width * 0.48,
+          height: double.infinity,
+          margin: const EdgeInsets.symmetric(horizontal: 5),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(30),
+            child: Stack(
+              children: [
+                ..._BackgroundCircles._buildCircles(context),
+                Positioned(
+                  left: 0,
+                  right: 0,
+                  top: 0,
+                  bottom: 0,
+                  child: MinuteUpdater(builder: (context) {
+                    String timeUntil = ReservaTimeHelper.timeUntil(
+                      reserva.fechaReserva,
+                      reserva.horaInicio,
+                      horaFin: reserva.horaFin,
+                    );
+
+                    final status = ReservaTimeHelper.getReservaStatus(
+                        reserva.fechaReserva,
+                        reserva.horaInicio,
+                        reserva.horaFin);
+                    return Container(
+                      padding: const EdgeInsets.all(20),
+                      child: Column(
+                        children: [
+                          Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(5),
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withOpacity(.1),
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: AnimateIcon(
+                                  key: UniqueKey(),
+                                  onTap: () {},
+                                  iconType: IconType.continueAnimation,
+                                  height: 20,
+                                  width: 20,
+                                  color: colors.primary,
+                                  animateIcon: status ==
+                                          ReservaStatus.faltaTiempo
+                                      ? AnimateIcons.bell
+                                      : status == ReservaStatus.tiempoAcabado
+                                          ? AnimateIcons.checkbox
+                                          : AnimateIcons.playStop,
+                                ),
+                              ),
+                              const SizedBox(width: 5),
+                              Text('Reserva', style: textStyles.h4),
+                            ],
+                          ),
+                          SizedBox(height: size.height * 0.005),
+                          Text(
+                            '${weekDayNames[reserva.fechaReserva.weekday - 1]} ${reserva.fechaReserva.day} de ${monthNames[reserva.fechaReserva.month - 1]}',
+                            style: textStyles.small
+                                .copyWith(color: colors.primary),
+                            textAlign: TextAlign.center,
+                          ),
+                          const Spacer(),
+                          RichText(
+                            text: TextSpan(children: [
+                              TextSpan(
+                                text: reserva.horaInicio,
+                                style: textStyles.h4,
+                              ),
+                              TextSpan(
+                                text: ' - ',
+                                style: textStyles.h4,
+                              ),
+                              TextSpan(
+                                text: reserva.horaFin,
+                                style: textStyles.h4,
+                              ),
+                            ]),
+                          ),
+                          SizedBox(height: size.height * 0.01),
+                          RippleAnimation(
+                            color: colors.muted.withOpacity(.5),
+                            delay: const Duration(milliseconds: 300),
+                            repeat: true,
+                            minRadius:
+                                status == ReservaStatus.faltaTiempo ? 30 : 18,
+                            ripplesCount: 1,
+                            duration: Duration(
+                                milliseconds:
+                                    status == ReservaStatus.faltaTiempo
+                                        ? 6 * 300
+                                        : 12 * 300),
+                            child: Container(
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: status == ReservaStatus.faltaTiempo
+                                    ? colors.muted.withOpacity(.5)
+                                    : colors.muted.withOpacity(.2),
+                              ),
+                              width: size.height * 0.07,
+                              height: size.height * 0.07,
+                              child: Center(
+                                child: AnimateIcon(
+                                  width: 24,
+                                  height: 24,
+                                  onTap: () {},
+                                  color: colors.primary,
+                                  iconType: IconType.continueAnimation,
+                                  animateIcon: status ==
+                                          ReservaStatus.faltaTiempo
+                                      ? AnimateIcons.hourglass
+                                      : status == ReservaStatus.tiempoAcabado
+                                          ? AnimateIcons.fogWeather
+                                          : AnimateIcons.loading4,
+                                ),
+                              ),
+                            ),
+                          ),
+                          const Spacer(),
+                          status == ReservaStatus.faltaTiempo
+                              ? RichText(
+                                  textAlign: TextAlign.center,
+                                  text: TextSpan(children: [
+                                    TextSpan(
+                                        text: 'Quedan ',
+                                        style: textStyles.small),
+                                    TextSpan(
+                                      text: timeUntil,
+                                      style: textStyles.small,
+                                    ),
+                                  ]),
+                                )
+                              : Text(
+                                  timeUntil,
+                                  style: textStyles.small,
+                                ),
+                        ],
+                      ),
+                    );
+                  }),
+                )
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }
