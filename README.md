@@ -8,7 +8,7 @@
 
 ###
 
-<img align="right" height="200" src="https://ph-files.imgix.net/7e959495-60ef-4793-b423-ae78da2f75f9.png?auto=format"  />
+<img align="right" height="200" src="https://wpbackendapi.tutorend.com/wp-content/uploads/2024/03/shadcn-ui-nextjs-1024x576.jpg"  />
 
 ###
 
@@ -16,7 +16,7 @@
 
 ###
 
-<p align="left">Aplicación para gestionar las reservas de horas, en una cancha de futbol, de Lunes a Domingo. <br><br>Se controlan distintos estados de las horas, como "bloqueada" por el administrador de la cancha. @jorgeherrera, ademas tambien se van notificando los pagos de cada hora.</p>
+<p align="left">Aplicación para gestionar las reservas de horas, en una cancha de futbol⚽, de Lunes a Domingo. <br><br>Se controlan distintos estados de las horas⌚, como "bloqueada" por el administrador de la cancha. @jorgeherrera🧍, ademas tambien se van notificando los pagos de cada hora.💸</p>
 
 ###
 
