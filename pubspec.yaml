@@ -1,7 +1,7 @@
 name: pobla_app
-description: "A new Flutter project."
-publish_to: "none"
-version: 0.1.0
+description: "Reservas Cancha de futbol"
+publish_to: "H33Criss"
+version: 1.0.0
 
 environment:
   sdk: ">=3.4.3 <4.0.0"

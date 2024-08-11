@@ -1,10 +1,11 @@
 `Flutter version 3.22.2 | Dart version 3.4.3`
+`Shadcn_ui(for flutter) version 0.6.3`
 
 <h1 align="center">App de Reservas para cancha de Futból</h1>
 
 ###
 
-<img align="left" height="300" src="https://avatars.githubusercontent.com/u/14101776?s=280&v=4"  />
+<img align="left" height="300" src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/79/Flutter_logo.svg/2048px-Flutter_logo.svg.png"  />
 
 ###
 
