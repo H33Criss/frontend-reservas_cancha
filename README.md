@@ -4,11 +4,11 @@
 
 ###
 
-<img align="left" height="150" src="https://avatars.githubusercontent.com/u/14101776?s=280&v=4"  />
+<img align="left" height="200" src="https://avatars.githubusercontent.com/u/14101776?s=280&v=4"  />
 
 ###
 
-<img align="right" height="150" src="https://ph-files.imgix.net/7e959495-60ef-4793-b423-ae78da2f75f9.png?auto=format"  />
+<img align="right" height="200" src="https://ph-files.imgix.net/7e959495-60ef-4793-b423-ae78da2f75f9.png?auto=format"  />
 
 ###
 
@@ -67,7 +67,7 @@ Pantallas de ⌚"Horario de Horas" y 👌"Reserva tu hora" en la cancha.
 ###
 
 <p align="left">
-Pantallas de ⌚"Lista de reservas" y 👌"Reserva detalle" del usuario.
+Pantallas de 📔"Lista de reservas" y 🪁"Reserva detalle" que tenga el usuario.
 </p>
 
 ###
