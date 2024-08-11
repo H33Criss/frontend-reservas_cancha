@@ -1,7 +1,7 @@
 `Flutter version 3.22.2 | Dart version 3.4.3`
 `Shadcn_ui(for flutter) version 0.6.3`
 
-<h1 align="center">App de Reservas para cancha de Futból</h1>
+<h1 align="center">App de Reservas para cancha de Fútbol</h1>
 
 ###
 
@@ -17,7 +17,7 @@
 
 ###
 
-<p align="left">Aplicación para gestionar las reservas de horas, en una cancha de futbol⚽, de Lunes a Domingo. <br><br>Se controlan distintos estados de las horas⌚, como "bloqueada" por el administrador de la cancha. @jorgeherrera🧍, ademas tambien se van notificando los pagos de cada hora.💸</p>
+<p align="left">Aplicación para gestionar las reservas de horas, en una cancha de fútbol⚽, de Lunes a Domingo. <br><br>Se controlan distintos estados de las horas⌚, como "bloqueada" por el administrador de la cancha. @jorgeherrera🧍, ademas tambien se van notificando los pagos de cada hora.💸</p>
 
 ###
 
