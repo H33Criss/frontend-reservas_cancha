@@ -1,6 +1,6 @@
 `Flutter version 3.22.2 | Dart version 3.4.3`
 `Shadcn_ui(for flutter) version 0.6.3` <br> <br>
-<small> Esta app esta vinculada al proyecto <a href="https://github.com/H33Criss/backend-reservas_cancha"> `backend` </a>
+<small> Esta app esta vinculada al proyecto 👉 <a href="https://github.com/H33Criss/backend-reservas_cancha"> `backend-reservas_cancha` </a>
 </small>
 
 <h1 align="center">App de Reservas para cancha de Fútbol</h1>
