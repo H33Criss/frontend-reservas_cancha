@@ -33,3 +33,17 @@
 <img align="left" height="800" src="https://raw.githubusercontent.com/H33Criss/frontend-reservas_cancha/main/assets/view_app/2.jpg"  />
 
 ###
+
+<br clear="both">
+
+<h3 align="left">📓 Gestion de reservas</h3>
+
+###
+
+<img align="left" height="800" src="https://raw.githubusercontent.com/H33Criss/frontend-reservas_cancha/main/assets/view_app/4.jpg"  />
+
+###
+
+<img align="left" height="800" src="https://raw.githubusercontent.com/H33Criss/frontend-reservas_cancha/main/assets/view_app/5.jpg"  />
+
+###
