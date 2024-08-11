@@ -17,7 +17,12 @@
 
 ###
 
-<p align="left">Aplicación para gestionar las reservas de horas, en una cancha de fútbol⚽, de Lunes a Domingo. <br><br>Se controlan distintos estados de las horas⌚, como "bloqueada" por el administrador de la cancha. @jorgeherrera🧍, ademas tambien se van notificando los pagos de cada hora.💸</p>
+<p align="left">Aplicación para gestionar las reservas de horas, en una cancha de fútbol⚽, de Lunes a Domingo. <br><br>Se controlan distintos estados de las horas⌚, como "bloqueada" por el administrador de la cancha. @jorgeherrera🧍, ademas tambien se van notificando los pagos de cada hora.💸 <br/>
+<br/>
+
+Para esta app se utilizo `Flutter`, `Socket.io` y `Shadcn ui`.
+
+</p>
 
 ###
 
@@ -68,7 +73,7 @@ Pantallas de ⌚"Horario de Horas" y 👌"Reserva tu hora" en la cancha.
 ###
 
 <p align="left">
-Pantallas de 📔"Lista de reservas" y 🪁"Reserva detalle" que tenga el usuario.
+Pantallas de 🪁"Reserva detalle" y 📔"Lista de reservas" que tenga el usuario.
 </p>
 
 ###
