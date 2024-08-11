@@ -47,7 +47,7 @@ Pantallas de 🔐"Inicio de sesión" y 🏠"Inicio" de la aplicacion.
 ###
 
 <p align="left">
-Pantallas de 🔐"Horario de Hora" y 🏠"Reserva tu hora" en la cancha.
+Pantallas de ⌚"Horario de Horas" y 👌"Reserva tu hora" en la cancha.
 </p>
 
 ###
@@ -57,5 +57,25 @@ Pantallas de 🔐"Horario de Hora" y 🏠"Reserva tu hora" en la cancha.
 ###
 
 <img align="left" height="800" src="https://raw.githubusercontent.com/H33Criss/frontend-reservas_cancha/main/assets/view_app/5.jpg"  />
+
+###
+
+<br clear="both">
+
+<h3 align="left">⚽ Reservas del usuario</h3>
+
+###
+
+<p align="left">
+Pantallas de ⌚"Lista de reservas" y 👌"Reserva detalle" del usuario.
+</p>
+
+###
+
+<img align="left" height="800" src="https://raw.githubusercontent.com/H33Criss/frontend-reservas_cancha/main/assets/view_app/9.jpg"  />
+
+###
+
+<img align="left" height="800" src="https://raw.githubusercontent.com/H33Criss/frontend-reservas_cancha/main/assets/view_app/8.jpg"  />
 
 ###
