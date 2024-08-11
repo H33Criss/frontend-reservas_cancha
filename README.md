@@ -4,11 +4,11 @@
 
 ###
 
-<img align="left" height="200" src="https://avatars.githubusercontent.com/u/14101776?s=280&v=4"  />
+<img align="left" height="300" src="https://avatars.githubusercontent.com/u/14101776?s=280&v=4"  />
 
 ###
 
-<img align="right" height="200" src="https://wpbackendapi.tutorend.com/wp-content/uploads/2024/03/shadcn-ui-nextjs-1024x576.jpg"  />
+<img align="right" height="150" src="https://wpbackendapi.tutorend.com/wp-content/uploads/2024/03/shadcn-ui-nextjs-1024x576.jpg"  />
 
 ###
 
