@@ -38,10 +38,10 @@ class MainApp extends StatelessWidget {
           Locale('en', 'US'), // English
           Locale('es', 'ES'), // Spanish
         ],
+        locale: const Locale('es', 'ES'),
         theme: AppTheme.getShadTheme(size),
         themeMode: ThemeMode.dark,
         darkTheme: AppTheme.getDarkShadTheme(size),
-        locale: const Locale('es', 'ES'),
         routerConfig: mainRouter,
         debugShowCheckedModeBanner: false,
       ),

@@ -9,8 +9,6 @@ import 'package:pobla_app/src/helpers/reservas/reserva_time_helper.dart';
 import 'package:pobla_app/src/providers/providers.dart';
 import 'package:pobla_app/src/providers/reservas/mixin/socket/socket_reserva_provider.dart';
 import 'package:pobla_app/src/shared/shared.dart';
-import 'package:pobla_app/src/shared/widgets/connection_timeout.dart';
-import 'package:pobla_app/src/shared/widgets/minute_update.dart';
 import 'package:provider/provider.dart';
 import 'package:shadcn_ui/shadcn_ui.dart';
 import 'package:simple_ripple_animation/simple_ripple_animation.dart';

@@ -1,6 +1,7 @@
 import 'package:animate_do/animate_do.dart';
 import 'package:animated_icon/animated_icon.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_skeleton_ui/flutter_skeleton_ui.dart';
 import 'package:pobla_app/infrastructure/models/reserva.model.dart';
 import 'package:pobla_app/src/data/hours_definitions.dart';
 import 'package:pobla_app/src/helpers/reservas/reserva_time_helper.dart';
@@ -25,6 +26,16 @@ class _ReservasListUserState extends State<ReservasListUser> {
   void initState() {
     super.initState();
     _reservaProvider = context.read<ReservaProvider>();
+    _initSocketConnection(false);
+  }
+
+  void _initSocketConnection(bool renew) {
+    if (renew) {
+      _reservaProvider.disconnect([
+        ReservasEvent.reservasTotales,
+        ReservasEvent.newReserva,
+      ]);
+    }
     _reservaProvider.connect([
       ReservasEvent.reservasTotales,
       ReservasEvent.newReserva,
@@ -125,22 +136,29 @@ class _ReservasListUserState extends State<ReservasListUser> {
                                   child:
                                       CircularProgressIndicator(strokeWidth: 2),
                                 )
-                              : reservasTotales.isEmpty
-                                  ? const EmptyReservas(
-                                      message: 'No tienes reservas historicas.')
-                                  : ListView.builder(
-                                      itemCount: reservasTotales.length,
-                                      itemBuilder: (context, i) {
-                                        final reserva = reservasTotales[i];
-                                        return _ReservaItem(
-                                          index: i,
-                                          size: size,
-                                          colors: colors,
-                                          reserva: reserva,
-                                          textStyles: textStyles,
-                                        );
-                                      },
-                                    ),
+                              : reservaProvider.connectionTimeouts[
+                                      ReservasEvent.reservasTotales]!
+                                  ? ConnectionTimeoutWidget(
+                                      tryAgainFunction: _initSocketConnection,
+                                      topSeparation: size.height * 0.1,
+                                    )
+                                  : reservasTotales.isEmpty
+                                      ? const EmptyReservas(
+                                          message:
+                                              'No tienes reservas historicas.')
+                                      : ListView.builder(
+                                          itemCount: reservasTotales.length,
+                                          itemBuilder: (context, i) {
+                                            final reserva = reservasTotales[i];
+                                            return _ReservaItem(
+                                              index: i,
+                                              size: size,
+                                              colors: colors,
+                                              reserva: reserva,
+                                              textStyles: textStyles,
+                                            );
+                                          },
+                                        ),
                         ),
                       ),
                     ],
@@ -164,6 +182,7 @@ class _CardStatsReserva extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final reservaProvider = context.watch<ReservaProvider>();
     Size size = MediaQuery.of(context).size;
     final colors = ShadTheme.of(context).colorScheme;
     final textStyles = ShadTheme.of(context).textTheme;
@@ -194,106 +213,56 @@ class _CardStatsReserva extends StatelessWidget {
       return sum + fin.difference(inicio).inHours;
     });
 
+    Widget buildStatRow(
+        String text, String subtitle, int value, AnimateIcons iconData) {
+      return Row(
+        children: [
+          AnimateIcon(
+            width: 24,
+            height: 24,
+            color: colors.muted,
+            onTap: () {},
+            iconType: IconType.continueAnimation,
+            animateIcon: iconData,
+          ),
+          SizedBox(width: size.width * 0.065),
+          _CustomSkeletonZoomIn(
+            text: '$value $text',
+            subtitle: subtitle,
+          ),
+        ],
+      );
+    }
+
     return ShadCard(
-      padding: const EdgeInsets.only(
-        left: 30,
-      ),
+      padding: const EdgeInsets.only(left: 30),
       backgroundColor: colors.primaryForeground,
       width: double.infinity,
       height: size.height * 0.33,
       content: Expanded(
         child: Column(
           children: [
-            //Amplia el content del ShadCard al maximo
-            SizedBox(
-              width: size.width,
+            SizedBox(width: size.width),
+            SizedBox(height: size.height * 0.02),
+            buildStatRow(
+              'reservas',
+              'Estas son todas tus reservas totales',
+              totalReservas,
+              AnimateIcons.calendar,
             ),
             SizedBox(height: size.height * 0.02),
-            Row(
-              children: [
-                AnimateIcon(
-                  width: 24,
-                  height: 24,
-                  color: colors.muted,
-                  onTap: () {},
-                  iconType: IconType.continueAnimation,
-                  animateIcon: AnimateIcons.calendar,
-                ),
-                SizedBox(width: size.width * 0.065),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      '$totalReservas reservas',
-                      style: textStyles.h4,
-                    ),
-                    Text(
-                      'Estas son todas tus reservas totales',
-                      style: textStyles.small.copyWith(
-                        color: colors.primary.withOpacity(.7),
-                      ),
-                    ),
-                  ],
-                )
-              ],
+            buildStatRow(
+              'pendientes',
+              'Reservas en espera de pago',
+              reservasPendientes,
+              AnimateIcons.loading3,
             ),
             SizedBox(height: size.height * 0.02),
-            Row(
-              children: [
-                AnimateIcon(
-                  width: 24,
-                  height: 24,
-                  color: colors.muted,
-                  onTap: () {},
-                  iconType: IconType.continueAnimation,
-                  animateIcon: AnimateIcons.loading3,
-                ),
-                SizedBox(width: size.width * 0.065),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      '$reservasPendientes pendientes',
-                      style: textStyles.h4,
-                    ),
-                    Text(
-                      'Reservas en espera de pago',
-                      style: textStyles.small.copyWith(
-                        color: colors.primary.withOpacity(.7),
-                      ),
-                    ),
-                  ],
-                )
-              ],
-            ),
-            SizedBox(height: size.height * 0.02),
-            Row(
-              children: [
-                AnimateIcon(
-                  width: 24,
-                  height: 24,
-                  color: colors.muted,
-                  onTap: () {},
-                  iconType: IconType.continueAnimation,
-                  animateIcon: AnimateIcons.checkbox,
-                ),
-                SizedBox(width: size.width * 0.065),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      '$reservasPagadas pagadas',
-                      style: textStyles.h4,
-                    ),
-                    Text(
-                      'Reservas pagadas confirmadas',
-                      style: textStyles.small.copyWith(
-                        color: colors.primary.withOpacity(.7),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
+            buildStatRow(
+              'pagadas',
+              'Reservas pagadas confirmadas',
+              reservasPagadas,
+              AnimateIcons.checkbox,
             ),
             Expanded(
               child: SizedBox(
@@ -309,7 +278,12 @@ class _CardStatsReserva extends StatelessWidget {
                         children: [
                           Text(
                             'Total Jugado',
-                            style: textStyles.large,
+                            style: reservaProvider.connectionTimeouts[
+                                        ReservasEvent.reservasTotales]! &&
+                                    !reservaProvider.loadingReservasTotales
+                                ? textStyles.large.copyWith(
+                                    color: Colors.red[800]!.withOpacity(.7))
+                                : textStyles.large,
                           ),
                           Text(
                             'El tiempo jugado en la cancha',
@@ -323,33 +297,49 @@ class _CardStatsReserva extends StatelessWidget {
                       top: size.height * 0.02,
                       left: -size.width * 0.045,
                       child: Container(
+                        padding: EdgeInsets.all(
+                            reservaProvider.loadingReservasTotales ? 20 : 0),
                         width: size.height * 0.07,
                         height: size.height * 0.07,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          color: colors.muted.withOpacity(.4),
+                          color: reservaProvider.connectionTimeouts[
+                                      ReservasEvent.reservasTotales]! &&
+                                  !reservaProvider.loadingReservasTotales
+                              ? Colors.red[800]!.withOpacity(.4)
+                              : colors.muted.withOpacity(.4),
                         ),
                         alignment: Alignment.center,
-                        child: Stack(
-                          clipBehavior: Clip.none,
-                          alignment: Alignment.center,
-                          children: [
-                            Positioned(
-                              top: 5,
-                              child: Text(
-                                '$horasTotalesReservadas',
-                                style: textStyles.large,
+                        child: reservaProvider.loadingReservasTotales
+                            ? const CircularProgressIndicator(
+                                strokeWidth: 2,
+                              )
+                            : Stack(
+                                clipBehavior: Clip.none,
+                                alignment: Alignment.center,
+                                children: [
+                                  Positioned(
+                                    top: 5,
+                                    child: reservaProvider.connectionTimeouts[
+                                            ReservasEvent.reservasTotales]!
+                                        ? Text(
+                                            '??',
+                                            style: textStyles.large,
+                                          )
+                                        : Text(
+                                            '$horasTotalesReservadas',
+                                            style: textStyles.large,
+                                          ),
+                                  ),
+                                  Positioned(
+                                    top: size.height * 0.035,
+                                    child: Text(
+                                      'horas',
+                                      style: textStyles.small,
+                                    ),
+                                  ),
+                                ],
                               ),
-                            ),
-                            Positioned(
-                              top: size.height * 0.035,
-                              child: Text(
-                                'horas',
-                                style: textStyles.small,
-                              ),
-                            ),
-                          ],
-                        ),
                       ),
                     ),
                   ],
@@ -358,6 +348,82 @@ class _CardStatsReserva extends StatelessWidget {
             )
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _CustomSkeletonZoomIn extends StatelessWidget {
+  const _CustomSkeletonZoomIn({
+    required this.text,
+    required this.subtitle,
+  });
+
+  final String text;
+  final String subtitle;
+
+  @override
+  Widget build(BuildContext context) {
+    final reservaProvider = context.watch<ReservaProvider>();
+    Size size = MediaQuery.of(context).size;
+    final colors = ShadTheme.of(context).colorScheme;
+    final textStyles = ShadTheme.of(context).textTheme;
+    return Skeleton(
+      duration: const Duration(milliseconds: 1300),
+      darkShimmerGradient: LinearGradient(
+        begin: Alignment.bottomLeft,
+        end: Alignment.topRight,
+        colors: [
+          colors.card.withOpacity(.7),
+          colors.primaryForeground,
+          colors.card,
+        ],
+      ),
+      isLoading: reservaProvider.loadingReservasTotales,
+      skeleton: FadeIn(
+        duration: const Duration(milliseconds: 400),
+        child: SkeletonAvatar(
+          style: SkeletonAvatarStyle(
+            width: size.width * 0.6,
+            height: size.height * 0.054,
+          ),
+        ),
+      ),
+      child: ZoomIn(
+        duration: const Duration(milliseconds: 200),
+        child:
+            reservaProvider.connectionTimeouts[ReservasEvent.reservasTotales]!
+                ? Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        '??  ${text.split(' ')[1]} ',
+                        style: textStyles.h4
+                            .copyWith(color: Colors.red[800]!.withOpacity(.7)),
+                      ),
+                      Text(
+                        subtitle,
+                        style: textStyles.small.copyWith(
+                          color: colors.primary.withOpacity(.7),
+                        ),
+                      ),
+                    ],
+                  )
+                : Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        text,
+                        style: textStyles.h4,
+                      ),
+                      Text(
+                        subtitle,
+                        style: textStyles.small.copyWith(
+                          color: colors.primary.withOpacity(.7),
+                        ),
+                      ),
+                    ],
+                  ),
       ),
     );
   }

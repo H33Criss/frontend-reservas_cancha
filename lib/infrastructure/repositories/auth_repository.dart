@@ -66,6 +66,7 @@ class AuthRepository {
         print('Failed to authenticate with backend');
       }
     } catch (error) {
+      print(error);
       if (error is DioException) {
         print('DioError: $error');
         print('DioException: ${error.response?.data}');

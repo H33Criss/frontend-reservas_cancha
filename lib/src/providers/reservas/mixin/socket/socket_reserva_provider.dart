@@ -87,6 +87,9 @@ mixin SocketReservaProvider on ChangeNotifier {
       _updateIfReservaExists(updatedReserva);
       WidgetsBinding.instance.addPostFrameCallback((_) => notifyListeners());
     });
+    _socket!.on('periodic-notification', (data) {
+      print('Notificacion con mensaje: $data');
+    });
     _socket?.connect();
   }
 
@@ -196,6 +199,7 @@ mixin SocketReservaProvider on ChangeNotifier {
       _socket?.off(SocketEvents.newReservaProxima);
       _socket?.off('${SocketEvents.newReserva}${_userProvider.user?.id}');
       _socket?.off('update-${_userProvider.user?.id ?? 'no id'}-reserva');
+      _socket?.off('periodic-notification');
     }
   }
 
