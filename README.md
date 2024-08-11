@@ -26,6 +26,12 @@
 
 ###
 
+<p align="left">
+Pantallas de 🔐"Inicio de sesión" y 🏠"Inicio" de la aplicacion.
+</p>
+
+###
+
 <img align="left" height="800" src="https://raw.githubusercontent.com/H33Criss/frontend-reservas_cancha/main/assets/view_app/1.jpg"  />
 
 ###
@@ -37,6 +43,12 @@
 <br clear="both">
 
 <h3 align="left">📓 Gestion de reservas</h3>
+
+###
+
+<p align="left">
+Pantallas de 🔐"Horario de Hora" y 🏠"Reserva tu hora" en la cancha.
+</p>
 
 ###
 
